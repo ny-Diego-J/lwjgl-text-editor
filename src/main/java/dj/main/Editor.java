@@ -1,16 +1,52 @@
 package dj.main;
 
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 public class Editor {
     public ArrayList<StringBuilder> inputs = new ArrayList<>();
     public int currentLine = 0;
     public int xCursorPos = 0;
 
+
+    public Editor() {
+        inputs.add(new StringBuilder());
+    }
+
+    public void processInput(HelloWorld h, long window, int key, int action, int mod) { //TODO: use mod for ctrl and shift
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+            glfwSetWindowShouldClose(window, true);// We will detect this in the rendering loop
+            return;
+        }
+
+
+        switch (key) {
+            case GLFW_KEY_BACKSPACE -> deleteAtChar(0);
+            case GLFW_KEY_DELETE -> deleteAtChar(1);
+            case GLFW_KEY_TAB -> tabPressed();
+            case GLFW_KEY_UP -> cursorUp();
+            case GLFW_KEY_DOWN -> cursorDown();
+            case GLFW_KEY_LEFT -> cursorLeft();
+            case GLFW_KEY_RIGHT -> cursorRight();
+        }
+
+        if (key == GLFW_KEY_ENTER && action == GLFW_PRESS){
+            enterPressed();
+        }
+    }
+
     private void tabPressed() {
         inputs.get(currentLine).insert(xCursorPos, "    ");
         xCursorPos += 4;
+    }
+
+    private void enterPressed() {
+        inputs.add(currentLine + 1, new StringBuilder());
+        currentLine++;
+        xCursorPos = 0;
     }
 
     private void cursorUp() {
@@ -43,25 +79,9 @@ public class Editor {
         }
     }
 
-    private void addKeyToList(KeyEvent e) { //TODO: get rid of KeyEvent
-        switch (e.getKeyChar()) {
-            case 8:
-                deleteAtChar(0);
-                break;
-            case 127:
-                deleteAtChar(1);
-                break;
-            case 10:
-                inputs.add(currentLine + 1, new StringBuilder());
-                currentLine++;
-                xCursorPos = 0;
-                break;
-            case 65535:
-            default:
-
-                inputs.get(currentLine).insert(xCursorPos, e.getKeyChar());
-                xCursorPos++;
-        }
+    public void addKeyToList(int e) { //TODO: get rid of KeyEvent
+        inputs.get(currentLine).insert(xCursorPos, (char) e);
+        xCursorPos++;
     }
 
     private void deleteAtChar(int mod) {

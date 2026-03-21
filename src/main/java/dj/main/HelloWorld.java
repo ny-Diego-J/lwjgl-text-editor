@@ -2,6 +2,7 @@ package dj.main;
 
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
+import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.nanovg.NanoVG;
 import org.lwjgl.nanovg.NanoVGGL3;
 import org.lwjgl.opengl.*;
@@ -17,6 +18,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class HelloWorld {
     boolean test = false;
+    Editor ed = new Editor();
     // The window handle
     private long window;
 
@@ -56,15 +58,12 @@ public class HelloWorld {
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) /** Wenn der key escape ist und er losgelassen wurde*/
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-            if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
-                test = true;
-            }
-            if (key == GLFW_KEY_0 && action == GLFW_RELEASE) {
-                test = false;
-            }
+            ed.processInput(this, window, key, action, mods);
         });
+        glfwSetCharCallback(window, (window, key) -> {
+            ed.addKeyToList(key);
+        });
+
 
         // Get the thread stack and push a new frame
         try (MemoryStack stack = stackPush()) {
@@ -116,6 +115,10 @@ public class HelloWorld {
         if (font == -1) System.err.println("Font not found.");
 
 
+        NVGColor color = NVGColor.create();
+        NanoVG.nvgRGBA((byte) 255, (byte) 255, (byte) 255, (byte) 255, color);
+
+
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
         while (!glfwWindowShouldClose(window)) {
@@ -126,27 +129,48 @@ public class HelloWorld {
 
             glfwGetWindowSize(window, width, height);
             glfwGetFramebufferSize(window, fbWidth, fbHeight);
-
             glViewport(0, 0, fbWidth[0], fbHeight[0]);
-
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// clear the framebuffer
-
-
-            glBegin(GL_QUADS);
-            glColor3f(0.1f, 0.8f, 0.2f);
-            glVertex2f(-0.5f, -0.5f);
-            glVertex2f(0.5f, -0.5f);
-            glVertex2f(0.5f, 0.5f);
-            glVertex2f(-0.5f, 0.5f);
-            glEnd();
             float pxRatio = (float) fbWidth[0] / (float) width[0];
+
+
+            float textHeight = 10.0f;
+            float fontSize = 54.0f;
+
+            for (StringBuilder sb : ed.inputs) {
+                NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
+                NanoVG.nvgFontSize(vg, fontSize);
+                NanoVG.nvgFontFace(vg, "JetBrains mono");
+                NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
+                NanoVG.nvgText(vg, 10.0f, textHeight, sb.toString());
+                NanoVG.nvgEndFrame(vg);
+                textHeight += fontSize;
+            }
+            float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
+
+
+            NanoVG.nvgBeginPath(vg);
+            NanoVG.nvgMoveTo(vg, charWidth * ed.xCursorPos + 10.0f, ed.currentLine * fontSize + 10.0f);
+            NanoVG.nvgLineTo(vg, charWidth * ed.xCursorPos + 10.0f, ed.currentLine * fontSize + fontSize);
+            NanoVG.nvgStrokeColor(vg, color);
+            NanoVG.nvgStrokeWidth(vg, 1.0f);
+            NanoVG.nvgStroke(vg);
+
+
+//            glBegin(GL_QUADS);
+//            glColor3f(0.1f, 0.8f, 0.2f);
+//            glVertex2f(-0.5f, -0.5f);
+//            glVertex2f(0.5f, -0.5f);
+//            glVertex2f(0.5f, 0.5f);
+//            glVertex2f(-0.5f, 0.5f);
+//            glEnd();
 
 
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
             NanoVG.nvgFontSize(vg, 54.0f);
             NanoVG.nvgFontFace(vg, "JetBrains mono");
             NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
-            NanoVG.nvgText(vg, 10.0f, height[0]- 100, "Press 0 to make text appear");
+            NanoVG.nvgText(vg, 10.0f, height[0] - 100, "Press anything to start the editor");
             NanoVG.nvgEndFrame(vg);
 
             if (test) {
