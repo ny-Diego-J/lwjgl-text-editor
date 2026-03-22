@@ -9,6 +9,7 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
 import java.nio.*;
+import java.util.Objects;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -34,11 +35,11 @@ public class HelloWorld {
 
         // Terminate GLFW and free the error callback
         glfwTerminate();
-        glfwSetErrorCallback(null).free();
+        Objects.requireNonNull(glfwSetErrorCallback(null)).free();
     }
 
     private void init() {
-        // Setup an error callback. The default implementation
+        // Set up an error callback. The default implementation
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
 
@@ -74,13 +75,14 @@ public class HelloWorld {
             glfwGetWindowSize(window, pWidth, pHeight);
 
             // Get the resolution of the primary monitor
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
             // Center the window
+            assert vidMode != null;
             glfwSetWindowPos(
                     window,
-                    (vidmode.width() - pWidth.get(0)) / 2,
-                    (vidmode.height() - pHeight.get(0)) / 2
+                    (vidMode.width() - pWidth.get(0)) / 2,
+                    (vidMode.height() - pHeight.get(0)) / 2
             );
         } // the stack frame is popped automatically
 
@@ -105,9 +107,7 @@ public class HelloWorld {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 
-        /**
-         * initialize font
-         */
+        // Initialize the Font
         long vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS | NanoVGGL3.NVG_STENCIL_STROKES);
         if (vg == 0) throw new RuntimeException("NanoVG could not get initialize");
 
@@ -155,15 +155,6 @@ public class HelloWorld {
             NanoVG.nvgStrokeColor(vg, color);
             NanoVG.nvgStrokeWidth(vg, 1.0f);
             NanoVG.nvgStroke(vg);
-
-
-//            glBegin(GL_QUADS);
-//            glColor3f(0.1f, 0.8f, 0.2f);
-//            glVertex2f(-0.5f, -0.5f);
-//            glVertex2f(0.5f, -0.5f);
-//            glVertex2f(0.5f, 0.5f);
-//            glVertex2f(-0.5f, 0.5f);
-//            glEnd();
 
 
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
