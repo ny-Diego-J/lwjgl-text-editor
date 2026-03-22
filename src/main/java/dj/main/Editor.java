@@ -17,10 +17,10 @@ public class Editor {
     }
 
     public void processInput(HelloWorld h, long window, int key, int action, int mod) { //TODO: use mod for ctrl and shift
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-            glfwSetWindowShouldClose(window, true);// We will detect this in the rendering loop
-            return;
-        }
+//        if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+//            glfwSetWindowShouldClose(window, true);// We will detect this in the rendering loop
+//            return;
+//        }
 
         if (action == GLFW_PRESS) inputSwitch(key);
         if (action == GLFW_REPEAT) inputSwitch(key);

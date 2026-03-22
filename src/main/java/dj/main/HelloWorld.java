@@ -9,6 +9,7 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
 import java.nio.*;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static org.lwjgl.glfw.Callbacks.*;
@@ -18,7 +19,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class HelloWorld {
-    boolean test = false;
+    boolean hasStarted = false;
     Editor ed = new Editor();
     // The window handle
     private long window;
@@ -59,6 +60,7 @@ public class HelloWorld {
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
+            hasStarted = true;
             ed.processInput(this, window, key, action, mods);
         });
         glfwSetCharCallback(window, (window, key) -> {
@@ -136,40 +138,44 @@ public class HelloWorld {
 
             float textHeight = 10.0f;
             float fontSize = 54.0f;
+            int truePos = ed.xCursorPos;
+
+            NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
+            NanoVG.nvgFontSize(vg, fontSize);
+            NanoVG.nvgFontFace(vg, "JetBrains mono");
+            NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
+            float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
+            int breaks = 0;
 
             for (StringBuilder sb : ed.inputs) {
-                NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
-                NanoVG.nvgFontSize(vg, fontSize);
-                NanoVG.nvgFontFace(vg, "JetBrains mono");
-                NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
-                NanoVG.nvgText(vg, 10.0f, textHeight, sb.toString());
+                if (charWidth * sb.length() > width[0]) {
+                    breaks++;
+                    float amount = width[0] / charWidth;
+                    NanoVG.nvgText(vg, 10.0f, textHeight, sb.substring(0, (int) amount));
+                    textHeight += fontSize;
+                    NanoVG.nvgText(vg, 10.0f, textHeight, sb.substring((int) amount));
+
+                } else {
+                    NanoVG.nvgText(vg, 10.0f, textHeight, sb.toString());
+                }
                 NanoVG.nvgEndFrame(vg);
                 textHeight += fontSize;
             }
-            float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
 
 
             NanoVG.nvgBeginPath(vg);
-            NanoVG.nvgMoveTo(vg, charWidth * ed.xCursorPos + 10.0f, ed.currentLine * fontSize + 10.0f);
-            NanoVG.nvgLineTo(vg, charWidth * ed.xCursorPos + 10.0f, ed.currentLine * fontSize + fontSize);
+            NanoVG.nvgMoveTo(vg, charWidth * ed.xCursorPos + 10.0f, ed.currentLine * fontSize + 10.0f + fontSize * breaks);
+            NanoVG.nvgLineTo(vg, charWidth * ed.xCursorPos + 10.0f, ed.currentLine * fontSize + fontSize + fontSize * breaks);
             NanoVG.nvgStrokeColor(vg, color);
             NanoVG.nvgStrokeWidth(vg, 1.0f);
             NanoVG.nvgStroke(vg);
 
-
-            NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
-            NanoVG.nvgFontSize(vg, 54.0f);
-            NanoVG.nvgFontFace(vg, "JetBrains mono");
-            NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
-            NanoVG.nvgText(vg, 10.0f, height[0] - 100, "Press anything to start the editor");
-            NanoVG.nvgEndFrame(vg);
-
-            if (test) {
+            if (!hasStarted) {
                 NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
-                NanoVG.nvgFontSize(vg, 64.0f);
+                NanoVG.nvgFontSize(vg, 54.0f);
                 NanoVG.nvgFontFace(vg, "JetBrains mono");
-                NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER | NanoVG.NVG_ALIGN_TOP);
-                NanoVG.nvgText(vg, width[0] / 2.0f, 10, "Hello World");
+                NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
+                NanoVG.nvgText(vg, 10.0f, height[0] - 100, "Press anything to start the editor");
                 NanoVG.nvgEndFrame(vg);
             }
 
@@ -180,5 +186,14 @@ public class HelloWorld {
             // invoked during this call.
             glfwPollEvents();
         }
+    }
+
+    private ArrayList<String> getLines(String input, int width, float charWidth) {
+        ArrayList<String> lines = new ArrayList<>();
+        if (charWidth * input.length() > width) {
+            float amount = width / charWidth;
+            lines.add(input.substring(0, (int) amount));
+        }
+        return lines;
     }
 }
