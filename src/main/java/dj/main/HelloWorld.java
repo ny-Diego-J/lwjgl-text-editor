@@ -45,8 +45,15 @@ public class HelloWorld {
         GLFWErrorCallback.createPrint(System.err).set();
 
         // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if (!glfwInit())
-            throw new IllegalStateException("Unable to initialize GLFW");
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            //windows version
+            glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WIN32);
+        } else {
+            //arch version
+            glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+        }
+
+        if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
 
         // Configure GLFW
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
@@ -55,8 +62,7 @@ public class HelloWorld {
 
         // Create the window
         window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
-        if (window == NULL)
-            throw new RuntimeException("Failed to create the GLFW window");
+        if (window == NULL) throw new RuntimeException("Failed to create the GLFW window");
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
@@ -81,11 +87,7 @@ public class HelloWorld {
 
             // Center the window
             assert vidMode != null;
-            glfwSetWindowPos(
-                    window,
-                    (vidMode.width() - pWidth.get(0)) / 2,
-                    (vidMode.height() - pHeight.get(0)) / 2
-            );
+            glfwSetWindowPos(window, (vidMode.width() - pWidth.get(0)) / 2, (vidMode.height() - pHeight.get(0)) / 2);
         } // the stack frame is popped automatically
 
         // Make the OpenGL context current
@@ -145,27 +147,58 @@ public class HelloWorld {
             NanoVG.nvgFontFace(vg, "JetBrains mono");
             NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
             float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
-            int breaks = 0;
 
             for (StringBuilder sb : ed.inputs) {
-                if (charWidth * sb.length() > width[0]) {
-                    breaks++;
-                    float amount = width[0] / charWidth;
-                    NanoVG.nvgText(vg, 10.0f, textHeight, sb.substring(0, (int) amount));
+                ArrayList<String> lines = getLines(sb.toString(), width[0], charWidth);
+                for (String s : lines) {
+                    NanoVG.nvgText(vg, 10.0f, textHeight, s);
+                    NanoVG.nvgEndFrame(vg);
                     textHeight += fontSize;
-                    NanoVG.nvgText(vg, 10.0f, textHeight, sb.substring((int) amount));
-
-                } else {
-                    NanoVG.nvgText(vg, 10.0f, textHeight, sb.toString());
                 }
-                NanoVG.nvgEndFrame(vg);
-                textHeight += fontSize;
             }
+            int maxCharLine = (int) (width[0] / charWidth);
 
+            int xPos = ed.xCursorPos % maxCharLine;
+            int yAddition = 0;
+            for (StringBuilder sb : ed.inputs) {
+                if (sb.length() + 1 > maxCharLine) {
+                    for (int i = 0; i < sb.length() / maxCharLine; i++) {
+                        yAddition++;
+                    }
+                }
+            }
+            //TODO: try to make it so it counts the linebreaks bevor current line and also the current line and calculate it by that
+            int lineBreaks = 0;
+            for (int i = 0; i < ed.currentLine + 1; i++) {
+                System.out.println(i + ": length: " + ed.inputs.get(i).length() + " max: " + maxCharLine);
+                if (i == ed.currentLine) {
+                    if (ed.xCursorPos + 1 > maxCharLine) {
+                        for (int j = 0; j < ed.inputs.get(i).length() / maxCharLine; j++) {
+                            lineBreaks++;
+                        }
+                    }
+                } else {
+                    if (ed.inputs.get(i).length() > maxCharLine) {
+                        for (int j = 0; j < ed.inputs.get(i).length() / maxCharLine; j++) {
+                            lineBreaks++;
+                        }
+                    }
+                }
+            }
+            float baseHeight = ed.currentLine * fontSize + lineBreaks * fontSize;
+            System.out.println("additions: " + lineBreaks);
+            System.out.println("height : " + baseHeight);
+            System.out.println("xPos : " + ed.xCursorPos);
 
-            NanoVG.nvgBeginPath(vg);
-            NanoVG.nvgMoveTo(vg, charWidth * ed.xCursorPos + 10.0f, ed.currentLine * fontSize + 10.0f + fontSize * breaks);
-            NanoVG.nvgLineTo(vg, charWidth * ed.xCursorPos + 10.0f, ed.currentLine * fontSize + fontSize + fontSize * breaks);
+//            if (ed.xCursorPos < maxCharLine && ed.currentLine < yAddition) baseHeight = ed.currentLine * fontSize;
+//            else baseHeight = ed.currentLine * fontSize + fontSize * yAddition;
+//            if (maxCharLine / ed.inputs.get(ed.currentLine).length() > 0) {
+//                baseHeight = ed.currentLine * fontSize + fontSize * yAddition;
+//            }
+
+            NanoVG.nvgBeginPath(vg); //TODO: rewrite cursor logic for line breaks
+            NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, baseHeight + 10.0f);
+            NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, baseHeight + fontSize);
             NanoVG.nvgStrokeColor(vg, color);
             NanoVG.nvgStrokeWidth(vg, 1.0f);
             NanoVG.nvgStroke(vg);
@@ -191,9 +224,29 @@ public class HelloWorld {
     private ArrayList<String> getLines(String input, int width, float charWidth) {
         ArrayList<String> lines = new ArrayList<>();
         if (charWidth * input.length() > width) {
-            float amount = width / charWidth;
-            lines.add(input.substring(0, (int) amount));
+            splitLine(lines, input, width, charWidth, 0);
+            int i = 0;
+            while (i < lines.size()) {
+                if (charWidth * lines.get(i).length() > width) {
+                    String replaceLine = lines.get(i);
+                    lines.remove(i);
+                    splitLine(lines, replaceLine, width, charWidth, i);
+                }
+                i++;
+            }
+        } else {
+            lines.add(input);
         }
         return lines;
+    }
+
+    private void splitLine(ArrayList<String> lines, String input, int width, float charWidth, int currentIndex) {
+        if (charWidth * input.length() > width) {
+            float amount = width / charWidth;
+            lines.add(currentIndex, input.substring((int) amount));
+            lines.add(currentIndex, input.substring(0, (int) amount));
+        } else {
+            lines.add(input);
+        }
     }
 }
