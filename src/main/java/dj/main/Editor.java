@@ -34,7 +34,7 @@ public class Editor {
             case GLFW_KEY_TAB -> tabPressed();
             case GLFW_KEY_UP -> cursorUp();
             case GLFW_KEY_DOWN -> cursorDown();
-            case GLFW_KEY_LEFT -> cursorLeft();
+            case GLFW_KEY_LEFT -> cursorLeft(mod);
             case GLFW_KEY_RIGHT -> cursorRight(mod);
             case GLFW_KEY_ENTER -> enterPressed();
         }
@@ -111,7 +111,22 @@ public class Editor {
 
     }
 
-    private void cursorLeft() {
+    private void cursorLeft(int mod) {
+        if (mod == GLFW_MOD_CONTROL && xCursorPos > 0) {
+            int pos = xCursorPos;
+            while (inputs.get(currentLine).charAt(pos - 1) == ' ') {
+                if (pos == 0 && currentLine >= 1) {
+                    xCursorPos = inputs.get(currentLine - 1).length();
+                    currentLine -= 1;
+                    return;
+                } else pos--;
+            }
+            while (inputs.get(currentLine).charAt(pos - 1) != ' ') {
+                if (pos == 1) break;
+                pos--;
+            }
+            xCursorPos = pos;
+        }
         if (xCursorPos > 0) xCursorPos--;
         else {
             if (currentLine >= 1) {
