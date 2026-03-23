@@ -44,6 +44,8 @@ public class HelloWorld {
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
 
+        if (!glfwInit()) //TODO: fix compatability for windows/hyprland.
+            throw new IllegalStateException("Unable to initialize GLFW");
         // Initialize GLFW. Most GLFW functions will not work before doing this.
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             //windows version
@@ -66,7 +68,6 @@ public class HelloWorld {
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            hasStarted = true;
             ed.processInput(this, window, key, action, mods);
         });
         glfwSetCharCallback(window, (window, key) -> {
@@ -130,6 +131,14 @@ public class HelloWorld {
             int[] height = new int[1];
             int[] fbWidth = new int[1];
             int[] fbHeight = new int[1];
+
+
+
+            if (ed.inputs.size() == 1 && ed.inputs.getFirst().length() == 0){
+                hasStarted = false;
+            } else {
+                hasStarted = true;
+            }
 
             glfwGetWindowSize(window, width, height);
             glfwGetFramebufferSize(window, fbWidth, fbHeight);

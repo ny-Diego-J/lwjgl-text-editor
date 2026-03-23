@@ -35,7 +35,7 @@ public class Editor {
             case GLFW_KEY_UP -> cursorUp();
             case GLFW_KEY_DOWN -> cursorDown();
             case GLFW_KEY_LEFT -> cursorLeft();
-            case GLFW_KEY_RIGHT -> cursorRight();
+            case GLFW_KEY_RIGHT -> cursorRight(mod);
             case GLFW_KEY_ENTER -> enterPressed();
         }
     }
@@ -74,15 +74,41 @@ public class Editor {
         }
     }
 
-    private void cursorRight() {
-        if (currentLine != inputs.size()) {
-            if (xCursorPos < inputs.get(currentLine).length()) {
-                xCursorPos++;
-            } else {
-                xCursorPos = 0;
-                currentLine++;
+    private void cursorRight(int mod) {
+        if (mod == GLFW_MOD_CONTROL && xCursorPos < inputs.get(currentLine).length()) {
+            int pos = xCursorPos;
+            if (xCursorPos == inputs.get(currentLine).length() - 1) {
+                if (currentLine != inputs.size() - 1) {
+                    xCursorPos = 0;
+                    currentLine++;
+                }
+            }
+            while (inputs.get(currentLine).charAt(pos) == ' ') {
+                if (pos == inputs.get(currentLine).length() && currentLine < inputs.size() - 1) {
+                    xCursorPos = inputs.get(currentLine).length();
+                    return;
+                } else pos++;
+            }
+            while (inputs.get(currentLine).charAt(pos) != ' ') {
+                pos++;
+                if (pos == inputs.get(currentLine).length()) break;
+
+            }
+            xCursorPos = pos;
+
+        } else {
+            if (currentLine != inputs.size()) {
+                if (xCursorPos < inputs.get(currentLine).length()) {
+                    xCursorPos++;
+                } else {
+                    if (currentLine != inputs.size() - 1) {
+                        xCursorPos = 0;
+                        currentLine++;
+                    }
+                }
             }
         }
+
     }
 
     private void cursorLeft() {
