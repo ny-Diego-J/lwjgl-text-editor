@@ -22,16 +22,15 @@ public class Editor {
 //            return;
 //        }
 
-        if (action == GLFW_PRESS) inputSwitch(key);
-        if (action == GLFW_REPEAT) inputSwitch(key);
-        System.out.println("mod = " + mod);
+        if (action == GLFW_PRESS) inputSwitch(key, mod);
+        if (action == GLFW_REPEAT) inputSwitch(key, mod);
 
     }
 
-    private void inputSwitch(int key) {
+    private void inputSwitch(int key, int mod) {
         switch (key) {
-            case GLFW_KEY_BACKSPACE -> deleteAtChar(0);
-            case GLFW_KEY_DELETE -> deleteAtChar(1);
+            case GLFW_KEY_BACKSPACE -> deleteAtChar(0, mod);
+            case GLFW_KEY_DELETE -> deleteAtChar(1, mod);
             case GLFW_KEY_TAB -> tabPressed();
             case GLFW_KEY_UP -> cursorUp();
             case GLFW_KEY_DOWN -> cursorDown();
@@ -76,15 +75,25 @@ public class Editor {
     }
 
     private void cursorRight() {
-        if (xCursorPos < inputs.get(currentLine).length()) {
-            xCursorPos++;
+        if (currentLine != inputs.size()) {
+            if (xCursorPos < inputs.get(currentLine).length()) {
+                xCursorPos++;
+            } else {
+                xCursorPos = 0;
+                currentLine++;
+            }
         }
     }
 
     private void cursorLeft() {
-        if (xCursorPos > 0) {
-            xCursorPos--;
+        if (xCursorPos > 0) xCursorPos--;
+        else {
+            if (currentLine >= 1) {
+                currentLine--;
+                xCursorPos = inputs.get(currentLine).length();
+            }
         }
+
     }
 
     public void addKeyToList(int e) {
@@ -92,7 +101,7 @@ public class Editor {
         xCursorPos++;
     }
 
-    private void deleteAtChar(int mod) {
+    private void deleteAtChar(int mod, int alter) {
         if (xCursorPos == 0 && currentLine >= 1 && mod == 0) {
             xCursorPos = inputs.get(currentLine - 1).length();
             inputs.get(currentLine - 1).append(inputs.get(currentLine));
@@ -101,6 +110,7 @@ public class Editor {
             currentLine -= 1;
             return;
         }
+        if (alter == GLFW_MOD_CONTROL && mod == 0) deleteWord();
         if (mod == 1 && xCursorPos == inputs.get(currentLine).length() && currentLine != inputs.indexOf(inputs.getLast())) {
             inputs.get(currentLine).append(inputs.get(currentLine + 1));
             inputs.remove(currentLine + 1);
@@ -118,4 +128,26 @@ public class Editor {
             }
         }
     }
+
+    private void deleteWord() {
+        int pos = xCursorPos;
+        while (inputs.get(currentLine).charAt(pos - 1) == ' ') {
+            if (pos == 0 && currentLine >= 1) {
+                xCursorPos = inputs.get(currentLine - 1).length();
+                inputs.get(currentLine - 1).append(inputs.get(currentLine));
+                inputs.remove(currentLine);
+                currentLine -= 1;
+                return;
+            } else if (pos == 0 && currentLine == 0) {
+                inputs.getFirst().replace(0, xCursorPos, "");
+            } else pos--;
+        }
+        while (inputs.get(currentLine).charAt(pos - 1) != ' ') {
+            if (pos == 1) break;
+            pos--;
+        }
+        inputs.get(currentLine).replace(pos, xCursorPos, "");
+        xCursorPos = pos;
+    }
 }
+

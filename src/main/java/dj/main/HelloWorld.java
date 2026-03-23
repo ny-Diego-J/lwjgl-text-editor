@@ -167,10 +167,9 @@ public class HelloWorld {
                     }
                 }
             }
-            //TODO: try to make it so it counts the linebreaks bevor current line and also the current line and calculate it by that
+
             int lineBreaks = 0;
             for (int i = 0; i < ed.currentLine + 1; i++) {
-                System.out.println(i + ": length: " + ed.inputs.get(i).length() + " max: " + maxCharLine);
                 if (i == ed.currentLine) {
                     if (ed.xCursorPos + 1 > maxCharLine) {
                         for (int j = 0; j < ed.inputs.get(i).length() / maxCharLine; j++) {
@@ -186,9 +185,6 @@ public class HelloWorld {
                 }
             }
             float baseHeight = ed.currentLine * fontSize + lineBreaks * fontSize;
-            System.out.println("additions: " + lineBreaks);
-            System.out.println("height : " + baseHeight);
-            System.out.println("xPos : " + ed.xCursorPos);
 
 //            if (ed.xCursorPos < maxCharLine && ed.currentLine < yAddition) baseHeight = ed.currentLine * fontSize;
 //            else baseHeight = ed.currentLine * fontSize + fontSize * yAddition;
@@ -196,7 +192,7 @@ public class HelloWorld {
 //                baseHeight = ed.currentLine * fontSize + fontSize * yAddition;
 //            }
 
-            NanoVG.nvgBeginPath(vg); //TODO: rewrite cursor logic for line breaks
+            NanoVG.nvgBeginPath(vg);
             NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, baseHeight + 10.0f);
             NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, baseHeight + fontSize);
             NanoVG.nvgStrokeColor(vg, color);
