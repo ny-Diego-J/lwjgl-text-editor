@@ -10,6 +10,7 @@ public class Editor {
     public ArrayList<StringBuilder> inputs = new ArrayList<>();
     public int currentLine = 0;
     public int xCursorPos = 0;
+    public int maxXPos = xCursorPos;
 
 
     public Editor() {
@@ -43,6 +44,7 @@ public class Editor {
     private void tabPressed() {
         inputs.get(currentLine).insert(xCursorPos, "    ");
         xCursorPos += 4;
+        maxXPos = xCursorPos;
     }
 
     private void enterPressed() {
@@ -50,16 +52,22 @@ public class Editor {
         inputs.get(currentLine).setLength(xCursorPos);
         inputs.add(currentLine + 1, new StringBuilder());
 
-
         currentLine++;
         inputs.get(currentLine).append(content);
         xCursorPos = 0;
+        maxXPos = xCursorPos;
     }
 
     private void cursorUp() {
         if (currentLine >= 1) {
             currentLine--;
-            if (xCursorPos > inputs.get(currentLine).length()) {
+            if (xCursorPos < maxXPos) {
+                if (maxXPos < inputs.get(currentLine).length()) {
+                    xCursorPos = maxXPos;
+                } else {
+                    xCursorPos = inputs.get(currentLine).length();
+                }
+            } else if (xCursorPos > inputs.get(currentLine).length()) {
                 xCursorPos = inputs.get(currentLine).length();
             }
         }
@@ -68,9 +76,14 @@ public class Editor {
     private void cursorDown() {
         if (currentLine + 1 < inputs.size()) {
             currentLine++;
-            if (xCursorPos > inputs.get(currentLine).length()) {
-                xCursorPos = inputs.get(currentLine).length();
-            }
+            if (xCursorPos < maxXPos) {
+                if (maxXPos < inputs.get(currentLine).length()) {
+                    xCursorPos = maxXPos;
+                } else {
+                    xCursorPos = inputs.get(currentLine).length();
+                }
+            } else if (xCursorPos > inputs.get(currentLine).length()) xCursorPos = inputs.get(currentLine).length();
+
         }
     }
 
@@ -80,12 +93,14 @@ public class Editor {
             if (xCursorPos == inputs.get(currentLine).length() - 1) {
                 if (currentLine != inputs.size() - 1) {
                     xCursorPos = 0;
+                    maxXPos = xCursorPos;
                     currentLine++;
                 }
             }
             while (inputs.get(currentLine).charAt(pos) == ' ') {
                 if (pos == inputs.get(currentLine).length() && currentLine < inputs.size() - 1) {
                     xCursorPos = inputs.get(currentLine).length();
+                    maxXPos = xCursorPos;
                     return;
                 } else pos++;
             }
@@ -95,14 +110,18 @@ public class Editor {
 
             }
             xCursorPos = pos;
+            maxXPos = xCursorPos;
+
 
         } else {
             if (currentLine != inputs.size()) {
                 if (xCursorPos < inputs.get(currentLine).length()) {
                     xCursorPos++;
+                    maxXPos = xCursorPos;
                 } else {
                     if (currentLine != inputs.size() - 1) {
                         xCursorPos = 0;
+                        maxXPos = xCursorPos;
                         currentLine++;
                     }
                 }
@@ -118,6 +137,7 @@ public class Editor {
                 if (pos == 0 && currentLine >= 1) {
                     xCursorPos = inputs.get(currentLine - 1).length();
                     currentLine -= 1;
+                    maxXPos = xCursorPos;
                     return;
                 } else pos--;
             }
@@ -126,15 +146,19 @@ public class Editor {
                 pos--;
             }
             xCursorPos = pos;
+            maxXPos = xCursorPos;
+
         }
-        if (xCursorPos > 0) xCursorPos--;
-        else {
+        if (xCursorPos > 0) {
+            xCursorPos--;
+            maxXPos = xCursorPos;
+        } else {
             if (currentLine >= 1) {
                 currentLine--;
                 xCursorPos = inputs.get(currentLine).length();
+                maxXPos = xCursorPos;
             }
         }
-
     }
 
     public void addKeyToList(int e) {
@@ -171,24 +195,56 @@ public class Editor {
     }
 
     private void deleteWord() {
-        int pos = xCursorPos;
-        while (inputs.get(currentLine).charAt(pos - 1) == ' ') {
-            if (pos == 0 && currentLine >= 1) {
-                xCursorPos = inputs.get(currentLine - 1).length();
-                inputs.get(currentLine - 1).append(inputs.get(currentLine));
-                inputs.remove(currentLine);
-                currentLine -= 1;
-                return;
-            } else if (pos == 0 && currentLine == 0) {
-                inputs.getFirst().replace(0, xCursorPos, "");
-            } else pos--;
+        int pos[] = lastWord();
+        if (pos[1] == currentLine && pos[0] <= xCursorPos) {
+            inputs.get(currentLine).replace(pos[0], xCursorPos, "");
+            xCursorPos = pos[0];
+            return;
         }
-        while (inputs.get(currentLine).charAt(pos - 1) != ' ') {
-            if (pos == 1) break;
-            pos--;
+        if (pos[1] < currentLine) {
+            currentLine = pos[1];
+            xCursorPos = pos[0];
         }
-        inputs.get(currentLine).replace(pos, xCursorPos, "");
-        xCursorPos = pos;
+    }
+
+    private int[] lastWord() {
+        int[] pos = new int[2];
+        pos[0] = xCursorPos;  // x pos
+        pos[1] = currentLine; // y pos
+        while (inputs.get(currentLine).charAt(pos[0] - 1) == ' ') {
+            if (pos[0] == 0 && currentLine >= 1) {
+                pos[0] = inputs.get(currentLine - 1).length();
+                pos[1] -= 1;
+                return pos;
+            } else if (pos[0] == 0 && currentLine == 0) {
+                return pos;
+            } else pos[0]--;
+        }
+        while (inputs.get(currentLine).charAt(pos[0] - 1) != ' ') {
+            if (pos[0] == 1) break;
+            pos[0]--;
+        }
+        return pos;
+    }
+
+    private int[] nextWord() {
+        int[] pos = new int[2];
+        pos[0] = xCursorPos;  // x pos
+        pos[1] = currentLine; // y pos
+        while (inputs.get(currentLine).charAt(pos[0] - 1) == ' ') {
+            if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
+                pos[0] = 0;
+                pos[1] += 1;
+                return pos;
+            } else if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 == inputs.size()) {
+                return pos;
+            } else pos[0]++;
+        }
+        while (inputs.get(currentLine).charAt(pos[0] - 1) != ' ') {
+            if (pos[0] == inputs.get(currentLine).length()) break;
+            pos[0]++;
+        }
+        return pos;
     }
 }
 

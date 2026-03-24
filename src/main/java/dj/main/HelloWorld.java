@@ -44,8 +44,8 @@ public class HelloWorld {
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
 
-        if (!glfwInit()) //TODO: fix compatability for windows/hyprland.
-            throw new IllegalStateException("Unable to initialize GLFW");
+        //if (!glfwInit()) //TODO: fix compatability for windows/hyprland.
+        //    throw new IllegalStateException("Unable to initialize GLFW");
         // Initialize GLFW. Most GLFW functions will not work before doing this.
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             //windows version
@@ -133,8 +133,7 @@ public class HelloWorld {
             int[] fbHeight = new int[1];
 
 
-
-            if (ed.inputs.size() == 1 && ed.inputs.getFirst().length() == 0){
+            if (ed.inputs.size() == 1 && ed.inputs.getFirst().length() == 0) {
                 hasStarted = false;
             } else {
                 hasStarted = true;
