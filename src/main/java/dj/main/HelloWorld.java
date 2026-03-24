@@ -44,10 +44,10 @@ public class HelloWorld {
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
 
-        //if (!glfwInit()) //TODO: fix compatability for windows/hyprland.
-        //    throw new IllegalStateException("Unable to initialize GLFW");
-        // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+        if (System.getProperty("os.name").equalsIgnoreCase("Linux")) {
+            if (!glfwInit()) //TODO: fix compatability for windows/hyprland.
+                throw new IllegalStateException("Unable to initialize GLFW");
+        } else if (System.getProperty("os.name").toLowerCase().contains("win")) {
             //windows version
             glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WIN32);
         } else {

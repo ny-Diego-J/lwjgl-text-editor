@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 public class Editor {
     public ArrayList<StringBuilder> inputs = new ArrayList<>();
@@ -87,7 +86,7 @@ public class Editor {
         }
     }
 
-    private void cursorRight(int mod) {
+    private void cursorRight(int mod) { //TODO: implement nextWord() function
         if (mod == GLFW_MOD_CONTROL && xCursorPos < inputs.get(currentLine).length()) {
             int pos = xCursorPos;
             if (xCursorPos == inputs.get(currentLine).length() - 1) {
@@ -111,8 +110,6 @@ public class Editor {
             }
             xCursorPos = pos;
             maxXPos = xCursorPos;
-
-
         } else {
             if (currentLine != inputs.size()) {
                 if (xCursorPos < inputs.get(currentLine).length()) {
@@ -130,7 +127,7 @@ public class Editor {
 
     }
 
-    private void cursorLeft(int mod) {
+    private void cursorLeft(int mod) { //TODO: implement lastWord() function
         if (mod == GLFW_MOD_CONTROL && xCursorPos > 0) {
             int pos = xCursorPos;
             while (inputs.get(currentLine).charAt(pos - 1) == ' ') {
@@ -175,7 +172,9 @@ public class Editor {
             currentLine -= 1;
             return;
         }
-        if (alter == GLFW_MOD_CONTROL && mod == 0) deleteWord();
+        if (alter == GLFW_MOD_CONTROL && mod == 0) backspaceWord();
+        if (alter == GLFW_MOD_CONTROL && mod == 1) deleteWord();
+
         if (mod == 1 && xCursorPos == inputs.get(currentLine).length() && currentLine != inputs.indexOf(inputs.getLast())) {
             inputs.get(currentLine).append(inputs.get(currentLine + 1));
             inputs.remove(currentLine + 1);
@@ -194,8 +193,8 @@ public class Editor {
         }
     }
 
-    private void deleteWord() {
-        int pos[] = lastWord();
+    private void backspaceWord() {
+        int[] pos = nextWord();
         if (pos[1] == currentLine && pos[0] <= xCursorPos) {
             inputs.get(currentLine).replace(pos[0], xCursorPos, "");
             xCursorPos = pos[0];
@@ -207,7 +206,18 @@ public class Editor {
         }
     }
 
-    private int[] lastWord() {
+    private void deleteWord() {
+        int[] pos = lastWord();
+        if (pos[1] == currentLine && pos[0] >= xCursorPos) {
+            inputs.get(currentLine).replace(xCursorPos, pos[0], "");
+            return;
+        }
+        if (pos[1] > currentLine) {
+            currentLine = pos[1];
+        }
+    }
+
+    private int[] nextWord() {
         int[] pos = new int[2];
         pos[0] = xCursorPos;  // x pos
         pos[1] = currentLine; // y pos
@@ -215,6 +225,10 @@ public class Editor {
             if (pos[0] == 0 && currentLine >= 1) {
                 pos[0] = inputs.get(currentLine - 1).length();
                 pos[1] -= 1;
+                return pos;
+            } else if (inputs.getFirst().isEmpty() && pos[1] == 0) {
+                pos[0] = xCursorPos;
+                pos[1] = currentLine;
                 return pos;
             } else if (pos[0] == 0 && currentLine == 0) {
                 return pos;
@@ -227,21 +241,23 @@ public class Editor {
         return pos;
     }
 
-    private int[] nextWord() {
+    private int[] lastWord() {
         int[] pos = new int[2];
         pos[0] = xCursorPos;  // x pos
         pos[1] = currentLine; // y pos
-        while (inputs.get(currentLine).charAt(pos[0] - 1) == ' ') {
+        do {
+            System.out.println(pos[0] + ", " + inputs.get(currentLine).length() + ", " + currentLine + ", " + inputs.size());
+
             if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
-                pos[0] = 0;
-                pos[1] += 1;
+                return pos;
+            } else if (pos[0] + 1 == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
                 return pos;
             } else if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 == inputs.size()) {
                 return pos;
             } else pos[0]++;
-        }
-        while (inputs.get(currentLine).charAt(pos[0] - 1) != ' ') {
-            if (pos[0] == inputs.get(currentLine).length()) break;
+        } while (inputs.get(currentLine).charAt(pos[0]) == ' ');
+        while (inputs.get(currentLine).charAt(pos[0]) != ' ') {
+            if (pos[0] == inputs.get(currentLine).length() - 1) break;
             pos[0]++;
         }
         return pos;
