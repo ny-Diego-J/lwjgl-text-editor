@@ -86,30 +86,22 @@ public class Editor {
         }
     }
 
-    private void cursorRight(int mod) { //TODO: implement nextWord() function
-        if (mod == GLFW_MOD_CONTROL && xCursorPos < inputs.get(currentLine).length()) {
-            int pos = xCursorPos;
-            if (xCursorPos == inputs.get(currentLine).length() - 1) {
-                if (currentLine != inputs.size() - 1) {
-                    xCursorPos = 0;
-                    maxXPos = xCursorPos;
-                    currentLine++;
-                }
-            }
-            while (inputs.get(currentLine).charAt(pos) == ' ') {
-                if (pos == inputs.get(currentLine).length() && currentLine < inputs.size() - 1) {
-                    xCursorPos = inputs.get(currentLine).length();
+    private void cursorRight(int mod) {
+        if (mod == GLFW_MOD_CONTROL && xCursorPos < inputs.get(currentLine).length() - 1) {
+            int[] pos = nextWord();
+            if (pos[1] == currentLine && pos[0] >= xCursorPos) {
+                if (pos[0] + 1 == inputs.get(pos[1]).length()) {
+                    xCursorPos = pos[0] + 1;
                     maxXPos = xCursorPos;
                     return;
-                } else pos++;
+                }
+                xCursorPos = pos[0];
+                maxXPos = xCursorPos;
+                return;
             }
-            while (inputs.get(currentLine).charAt(pos) != ' ') {
-                pos++;
-                if (pos == inputs.get(currentLine).length()) break;
-
+            if (pos[1] > currentLine) {
+                currentLine = pos[1];
             }
-            xCursorPos = pos;
-            maxXPos = xCursorPos;
         } else {
             if (currentLine != inputs.size()) {
                 if (xCursorPos < inputs.get(currentLine).length()) {
@@ -124,35 +116,28 @@ public class Editor {
                 }
             }
         }
-
     }
 
-    private void cursorLeft(int mod) { //TODO: implement lastWord() function
+    private void cursorLeft(int mod) {
         if (mod == GLFW_MOD_CONTROL && xCursorPos > 0) {
-            int pos = xCursorPos;
-            while (inputs.get(currentLine).charAt(pos - 1) == ' ') {
-                if (pos == 0 && currentLine >= 1) {
-                    xCursorPos = inputs.get(currentLine - 1).length();
-                    currentLine -= 1;
-                    maxXPos = xCursorPos;
-                    return;
-                } else pos--;
+            int[] pos = lastWord();
+            if (pos[1] == currentLine && pos[0] <= xCursorPos) {
+                xCursorPos = pos[0];
+                maxXPos = xCursorPos;
+                return;
             }
-            while (inputs.get(currentLine).charAt(pos - 1) != ' ') {
-                if (pos == 1) break;
-                pos--;
+            if (pos[1] < currentLine) {
+                currentLine = pos[1];
+                xCursorPos = pos[0];
+                maxXPos = xCursorPos;
             }
-            xCursorPos = pos;
-            maxXPos = xCursorPos;
-
-        }
-        if (xCursorPos > 0) {
-            xCursorPos--;
-            maxXPos = xCursorPos;
         } else {
-            if (currentLine >= 1) {
+            if (currentLine >= 1 && xCursorPos == 1) {
                 currentLine--;
                 xCursorPos = inputs.get(currentLine).length();
+                maxXPos = xCursorPos;
+            } else {
+                xCursorPos--;
                 maxXPos = xCursorPos;
             }
         }
@@ -194,7 +179,7 @@ public class Editor {
     }
 
     private void backspaceWord() {
-        int[] pos = nextWord();
+        int[] pos = lastWord();
         if (pos[1] == currentLine && pos[0] <= xCursorPos) {
             inputs.get(currentLine).replace(pos[0], xCursorPos, "");
             xCursorPos = pos[0];
@@ -207,7 +192,7 @@ public class Editor {
     }
 
     private void deleteWord() {
-        int[] pos = lastWord();
+        int[] pos = nextWord();
         if (pos[1] == currentLine && pos[0] >= xCursorPos) {
             inputs.get(currentLine).replace(xCursorPos, pos[0], "");
             return;
@@ -217,7 +202,7 @@ public class Editor {
         }
     }
 
-    private int[] nextWord() {
+    private int[] lastWord() {
         int[] pos = new int[2];
         pos[0] = xCursorPos;  // x pos
         pos[1] = currentLine; // y pos
@@ -241,7 +226,7 @@ public class Editor {
         return pos;
     }
 
-    private int[] lastWord() {
+    private int[] nextWord() {
         int[] pos = new int[2];
         pos[0] = xCursorPos;  // x pos
         pos[1] = currentLine; // y pos
@@ -253,6 +238,8 @@ public class Editor {
             } else if (pos[0] + 1 == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
                 return pos;
             } else if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 == inputs.size()) {
+                return pos;
+            } else if (pos[0] + 1 == inputs.get(currentLine).length() && currentLine + 1 == inputs.size()) {
                 return pos;
             } else pos[0]++;
         } while (inputs.get(currentLine).charAt(pos[0]) == ' ');

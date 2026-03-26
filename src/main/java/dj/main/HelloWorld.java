@@ -19,6 +19,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class HelloWorld {
+    private final float yStartPoint = 10.0f;
     boolean hasStarted = false;
     Editor ed = new Editor();
     // The window handle
@@ -109,7 +110,7 @@ public class HelloWorld {
         GL.createCapabilities();
 
         // Set the clear color
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(34.0f / 255.0f, 36.0f / 255.0f, 54.0f / 255.0f, 1.0f);
 
 
         // Initialize the Font
@@ -121,7 +122,7 @@ public class HelloWorld {
 
 
         NVGColor color = NVGColor.create();
-        NanoVG.nvgRGBA((byte) 255, (byte) 255, (byte) 255, (byte) 255, color);
+        NanoVG.nvgRGBA((byte) 200, (byte) 211, (byte) 245, (byte) 255, color);
 
 
         // Run the rendering loop until the user has attempted to close
@@ -133,7 +134,7 @@ public class HelloWorld {
             int[] fbHeight = new int[1];
 
 
-            if (ed.inputs.size() == 1 && ed.inputs.getFirst().length() == 0) {
+            if (ed.inputs.size() == 1 && ed.inputs.getFirst().isEmpty()) {
                 hasStarted = false;
             } else {
                 hasStarted = true;
@@ -146,7 +147,7 @@ public class HelloWorld {
             float pxRatio = (float) fbWidth[0] / (float) width[0];
 
 
-            float textHeight = 10.0f;
+            float textHeight = yStartPoint;
             float fontSize = 54.0f;
             int truePos = ed.xCursorPos;
 
@@ -155,27 +156,7 @@ public class HelloWorld {
             NanoVG.nvgFontFace(vg, "JetBrains mono");
             NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
             float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
-
-            for (StringBuilder sb : ed.inputs) {
-                ArrayList<String> lines = getLines(sb.toString(), width[0], charWidth);
-                for (String s : lines) {
-                    NanoVG.nvgText(vg, 10.0f, textHeight, s);
-                    NanoVG.nvgEndFrame(vg);
-                    textHeight += fontSize;
-                }
-            }
             int maxCharLine = (int) (width[0] / charWidth);
-
-            int xPos = ed.xCursorPos % maxCharLine;
-            int yAddition = 0;
-            for (StringBuilder sb : ed.inputs) {
-                if (sb.length() + 1 > maxCharLine) {
-                    for (int i = 0; i < sb.length() / maxCharLine; i++) {
-                        yAddition++;
-                    }
-                }
-            }
-
             int lineBreaks = 0;
             for (int i = 0; i < ed.currentLine + 1; i++) {
                 if (i == ed.currentLine) {
@@ -192,20 +173,46 @@ public class HelloWorld {
                     }
                 }
             }
+
+
+            int xPos = ed.xCursorPos % maxCharLine;
             float baseHeight = ed.currentLine * fontSize + lineBreaks * fontSize;
 
-//            if (ed.xCursorPos < maxCharLine && ed.currentLine < yAddition) baseHeight = ed.currentLine * fontSize;
-//            else baseHeight = ed.currentLine * fontSize + fontSize * yAddition;
-//            if (maxCharLine / ed.inputs.get(ed.currentLine).length() > 0) {
-//                baseHeight = ed.currentLine * fontSize + fontSize * yAddition;
-//            }
+            NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
+            NanoVG.nvgBeginPath(vg);
+            NanoVG.nvgMoveTo(vg, 0.0f, baseHeight + 35.0f);
+            NanoVG.nvgLineTo(vg, width[0], baseHeight + 35.0f);
+            NanoVG.nvgStrokeColor(vg, color);
+            NanoVG.nvgStrokeWidth(vg, fontSize);
+            NanoVG.nvgStroke(vg);
 
+
+            for (StringBuilder sb : ed.inputs) {
+                ArrayList<String> lines = getLines(sb.toString(), width[0], charWidth);
+                for (String s : lines) {
+                    NanoVG.nvgText(vg, 10.0f, textHeight, s);
+                    //NanoVG.nvgEndFrame(vg);
+                    textHeight += fontSize;
+                }
+            }
+
+            int yAddition = 0;
+            for (StringBuilder sb : ed.inputs) {
+                if (sb.length() + 1 > maxCharLine) {
+                    for (int i = 0; i < sb.length() / maxCharLine; i++) {
+                        yAddition++;
+                    }
+                }
+            }
+
+            NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
             NanoVG.nvgBeginPath(vg);
             NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, baseHeight + 10.0f);
             NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, baseHeight + fontSize);
             NanoVG.nvgStrokeColor(vg, color);
             NanoVG.nvgStrokeWidth(vg, 1.0f);
             NanoVG.nvgStroke(vg);
+            NanoVG.nvgEndFrame(vg);
 
             if (!hasStarted) {
                 NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
