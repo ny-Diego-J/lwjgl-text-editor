@@ -19,7 +19,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class HelloWorld {
-    private final float yStartPoint = 10.0f;
+    private static final float Y_OFFSET = 10.0f;
     boolean hasStarted = false;
     Editor ed = new Editor();
     // The window handle
@@ -46,7 +46,7 @@ public class HelloWorld {
         GLFWErrorCallback.createPrint(System.err).set();
 
         if (System.getProperty("os.name").equalsIgnoreCase("Linux")) {
-            if (!glfwInit()) //TODO: fix compatability for windows/hyprland.
+            if (!glfwInit())
                 throw new IllegalStateException("Unable to initialize GLFW");
         } else if (System.getProperty("os.name").toLowerCase().contains("win")) {
             //windows version
@@ -147,9 +147,8 @@ public class HelloWorld {
             float pxRatio = (float) fbWidth[0] / (float) width[0];
 
 
-            float textHeight = yStartPoint;
+            float textHeight = Y_OFFSET;
             float fontSize = 54.0f;
-            int truePos = ed.xCursorPos;
 
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
             NanoVG.nvgFontSize(vg, fontSize);

@@ -5,22 +5,21 @@ import java.util.ArrayList;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
+import java.util.logging.Logger;
+
 public class Editor {
     public ArrayList<StringBuilder> inputs = new ArrayList<>();
     public int currentLine = 0;
     public int xCursorPos = 0;
     public int maxXPos = xCursorPos;
+    Logger logger = Logger.getLogger(getClass().getName());
 
 
     public Editor() {
         inputs.add(new StringBuilder());
     }
 
-    public void processInput(HelloWorld h, long window, int key, int action, int mod) { //TODO: use mod for ctrl and shift
-//        if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-//            glfwSetWindowShouldClose(window, true);// We will detect this in the rendering loop
-//            return;
-//        }
+    public void processInput(int key, int action, int mod) {
 
         if (action == GLFW_PRESS) inputSwitch(key, mod);
         if (action == GLFW_REPEAT) inputSwitch(key, mod);
@@ -38,6 +37,8 @@ public class Editor {
             case GLFW_KEY_RIGHT -> cursorRight(mod);
             case GLFW_KEY_ENTER -> enterPressed();
         }
+        if (mod == GLFW_MOD_CONTROL && key == GLFW_KEY_V) pasteInput();
+
     }
 
     private void tabPressed() {
@@ -146,6 +147,10 @@ public class Editor {
     public void addKeyToList(int e) {
         inputs.get(currentLine).insert(xCursorPos, (char) e);
         xCursorPos++;
+    }
+
+    private void pasteInput() {
+
     }
 
     private void deleteAtChar(int mod, int alter) {
