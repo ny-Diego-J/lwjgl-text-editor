@@ -26,7 +26,7 @@ public class HelloWorld {
     private static final String FONT_NAME = "JetBrains mono";
     private long window;
     Logger logger = Logger.getLogger(getClass().getName());
-    Controller ct = new Controller();
+    Controller ct;
 
 
     public HelloWorld(Controller c) {

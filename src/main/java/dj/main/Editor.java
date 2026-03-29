@@ -23,17 +23,6 @@ public class Editor {
         ct.maxXPos = ct.xCursorPos;
     }
 
-    public void enterPressed() {
-        String content = inputs.get(ct.currentLine).substring(ct.xCursorPos);
-        inputs.get(ct.currentLine).setLength(ct.xCursorPos);
-        inputs.add(ct.currentLine + 1, new StringBuilder());
-
-        ct.currentLine++;
-        inputs.get(ct.currentLine).append(content);
-        ct.xCursorPos = 0;
-        ct.maxXPos = ct.xCursorPos;
-    }
-
 
     public void addKeyToList(int e) {
         inputs.get(ct.currentLine).insert(ct.xCursorPos, (char) e);
@@ -113,18 +102,26 @@ public class Editor {
         int[] pos = new int[2];
         pos[0] = ct.xCursorPos;  // x pos
         pos[1] = ct.currentLine; // y pos
-        while (inputs.get(ct.currentLine).charAt(pos[0] - 1) == ' ') {
-            if (pos[0] == 0 && ct.currentLine >= 1) {
-                pos[0] = inputs.get(ct.currentLine - 1).length();
-                pos[1] -= 1;
-                return pos;
-            } else if (inputs.getFirst().isEmpty() && pos[1] == 0) {
-                pos[0] = ct.xCursorPos;
-                pos[1] = ct.currentLine;
-                return pos;
-            } else if (pos[0] == 0 && ct.currentLine == 0) {
-                return pos;
-            } else pos[0]--;
+        if (pos[0] != 0) {
+            while (inputs.get(ct.currentLine).charAt(pos[0] - 1) == ' ') {
+                if (pos[0] == 1 && ct.currentLine >= 1) {
+                    pos[0] = inputs.get(ct.currentLine - 1).length();
+                    pos[1] -= 1;
+                    return pos;
+                } else if (inputs.getFirst().isEmpty() && pos[1] == 0) {
+                    pos[0] = ct.xCursorPos;
+                    pos[1] = ct.currentLine;
+                    return pos;
+                } else if (pos[0] == 0 && ct.currentLine == 0) {
+                    return pos;
+                } else pos[0]--;
+            }
+        } else {
+            if (pos[1] > 0) {
+                pos[1]--;
+                pos[0] = inputs.get(pos[1]).length();
+            }
+            return pos;
         }
         while (inputs.get(ct.currentLine).charAt(pos[0] - 1) != ' ') {
             if (pos[0] == 1) {

@@ -25,6 +25,7 @@ public class InputHandler {
                     case GLFW_KEY_RIGHT -> ct.cm.forwardWord();
                     case GLFW_KEY_BACKSPACE -> ct.ed.backspaceWord();
                     case GLFW_KEY_DELETE -> ct.ed.deleteWord();
+                    case GLFW_KEY_S -> ct.sf.saveFile();
                 }
                 break;
             case GLFW_MOD_ALT:
@@ -41,7 +42,7 @@ public class InputHandler {
                     case GLFW_KEY_DOWN -> ct.cm.cursorDown();
                     case GLFW_KEY_LEFT -> ct.cm.backwardChar();
                     case GLFW_KEY_RIGHT -> ct.cm.forwardChar();
-                    case GLFW_KEY_ENTER -> ct.ed.enterPressed();
+                    case GLFW_KEY_ENTER -> ct.cm.enterPressed();
                 }
         }
     }

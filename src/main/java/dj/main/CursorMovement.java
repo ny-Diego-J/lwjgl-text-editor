@@ -128,4 +128,15 @@ public class CursorMovement {
             }
         }
     }
+
+    public void enterPressed() {
+        String content = ct.ed.inputs.get(ct.currentLine).substring(ct.xCursorPos);
+        ct.ed.inputs.get(ct.currentLine).setLength(ct.xCursorPos);
+        ct.ed.inputs.add(ct.currentLine + 1, new StringBuilder());
+
+        ct.currentLine++;
+        ct.ed.inputs.get(ct.currentLine).append(content);
+        ct.xCursorPos = 0;
+        ct.maxXPos = ct.xCursorPos;
+    }
 }
