@@ -67,9 +67,9 @@ public class HelloWorld {
         window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
         if (window == NULL) throw new RuntimeException("Failed to create the GLFW window");
 
-        // Setup a key callback. It will be called every time a key is pressed, repeated or released.
+        // Set up a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            ed.processInput(this, window, key, action, mods);
+            ed.processInput(key, action, mods);
         });
         glfwSetCharCallback(window, (window, key) -> {
             ed.addKeyToList(key);
@@ -192,15 +192,6 @@ public class HelloWorld {
                     NanoVG.nvgText(vg, 10.0f, textHeight, s);
                     //NanoVG.nvgEndFrame(vg);
                     textHeight += fontSize;
-                }
-            }
-
-            int yAddition = 0;
-            for (StringBuilder sb : ed.inputs) {
-                if (sb.length() + 1 > maxCharLine) {
-                    for (int i = 0; i < sb.length() / maxCharLine; i++) {
-                        yAddition++;
-                    }
                 }
             }
 
