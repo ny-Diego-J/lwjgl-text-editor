@@ -1,5 +1,7 @@
 package dj.main;
 
+import dj.main.exceptions.NanoVGNotInitialisedException;
+import dj.main.exceptions.WindowFailedToCreateException;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.nanovg.NVGColor;
@@ -11,6 +13,7 @@ import org.lwjgl.system.*;
 import java.nio.*;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -21,13 +24,17 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class HelloWorld {
     private static final float Y_OFFSET = 10.0f;
     private static final String FONT_NAME = "JetBrains mono";
-    boolean hasStarted = false;
-    Editor ed = new Editor();
-    // The window handle
     private long window;
+    Logger logger = Logger.getLogger(getClass().getName());
+    Controller ct = new Controller();
+
+
+    public HelloWorld(Controller c) {
+        this.ct = c;
+    }
 
     public void run() {
-        System.out.println("Hello LWJGL " + Version.getVersion() + "!");
+        logger.info("Hello LWJGL " + Version.getVersion() + "!");
 
         init();
         loop();
@@ -45,6 +52,7 @@ public class HelloWorld {
         // Set up an error callback. The default implementation
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
+
 
         if (System.getProperty("os.name").equalsIgnoreCase("Linux")) {
             if (!glfwInit())
@@ -66,15 +74,11 @@ public class HelloWorld {
 
         // Create the window
         window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
-        if (window == NULL) throw new RuntimeException("Failed to create the GLFW window");
+        if (window == NULL) throw new WindowFailedToCreateException();
 
         // Set up a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window, (_, key, scancode, action, mods) -> {
-            ed.processInput(key, action, mods);
-        });
-        glfwSetCharCallback(window, (_, key) -> {
-            ed.addKeyToList(key);
-        });
+        glfwSetKeyCallback(window, (w, key, scancode, action, mods) -> ct.ih.processInput(key, action, mods, w));
+        glfwSetCharCallback(window, (_, key) -> ct.ed.addKeyToList(key));
 
 
         // Get the thread stack and push a new frame
@@ -116,10 +120,10 @@ public class HelloWorld {
 
         // Initialize the Font
         long vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS | NanoVGGL3.NVG_STENCIL_STROKES);
-        if (vg == 0) throw new RuntimeException("NanoVG could not get initialize");
+        if (vg == 0) throw new NanoVGNotInitialisedException();
 
         int font = NanoVG.nvgCreateFont(vg, FONT_NAME, "src/main/resources/fonts/main.ttf");
-        if (font == -1) System.err.println("Font not found.");
+        if (font == -1) logger.warning("Font not found.");
 
 
         NVGColor color = NVGColor.create();
@@ -135,7 +139,7 @@ public class HelloWorld {
             int[] fbHeight = new int[1];
 
 
-            hasStarted = ed.inputs.size() != 1 || !ed.inputs.getFirst().isEmpty();
+            ct.hasStarted = ct.ed.inputs.size() != 1 || !ct.ed.inputs.getFirst().isEmpty();
 
             glfwGetWindowSize(window, width, height);
             glfwGetFramebufferSize(window, fbWidth, fbHeight);
@@ -154,16 +158,16 @@ public class HelloWorld {
             float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
             int maxCharLine = (int) (width[0] / charWidth);
             int lineBreaks = 0;
-            for (int i = 0; i < ed.currentLine + 1; i++) {
-                if (i == ed.currentLine) {
-                    if (ed.xCursorPos + 1 > maxCharLine) {
-                        for (int j = 0; j < ed.inputs.get(i).length() / maxCharLine; j++) {
+            for (int i = 0; i < ct.currentLine + 1; i++) {
+                if (i == ct.currentLine) {
+                    if (ct.xCursorPos + 1 > maxCharLine) {
+                        for (int j = 0; j < ct.ed.inputs.get(i).length() / maxCharLine; j++) {
                             lineBreaks++;
                         }
                     }
                 } else {
-                    if (ed.inputs.get(i).length() > maxCharLine) {
-                        for (int j = 0; j < ed.inputs.get(i).length() / maxCharLine; j++) {
+                    if (ct.ed.inputs.get(i).length() > maxCharLine) {
+                        for (int j = 0; j < ct.ed.inputs.get(i).length() / maxCharLine; j++) {
                             lineBreaks++;
                         }
                     }
@@ -171,8 +175,8 @@ public class HelloWorld {
             }
 
 
-            int xPos = ed.xCursorPos % maxCharLine;
-            float baseHeight = ed.currentLine * fontSize + lineBreaks * fontSize;
+            int xPos = ct.xCursorPos % maxCharLine;
+            float baseHeight = ct.currentLine * fontSize + lineBreaks * fontSize;
 
             NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
             NanoVG.nvgBeginPath(vg);
@@ -183,11 +187,10 @@ public class HelloWorld {
             NanoVG.nvgStroke(vg);
 
 
-            for (StringBuilder sb : ed.inputs) {
+            for (StringBuilder sb : ct.ed.inputs) {
                 ArrayList<String> lines = getLines(sb.toString(), width[0], charWidth);
                 for (String s : lines) {
                     NanoVG.nvgText(vg, 10.0f, textHeight, s);
-                    //NanoVG.nvgEndFrame(vg);
                     textHeight += fontSize;
                 }
             }
@@ -201,7 +204,7 @@ public class HelloWorld {
             NanoVG.nvgStroke(vg);
             NanoVG.nvgEndFrame(vg);
 
-            if (!hasStarted) {
+            if (!ct.hasStarted) {
                 NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
                 NanoVG.nvgFontSize(vg, 54.0f);
                 NanoVG.nvgFontFace(vg, FONT_NAME);
