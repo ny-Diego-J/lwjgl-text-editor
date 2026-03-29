@@ -64,7 +64,6 @@ public class Editor {
                     case GLFW_KEY_ENTER -> enterPressed();
                 }
         }
-
         if (mod == GLFW_MOD_CONTROL && key == GLFW_KEY_V) pasteInput();
 
     }
@@ -172,13 +171,49 @@ public class Editor {
         }
     }
 
+    private void cursorLeft(int mod) {
+        if (mod == GLFW_MOD_CONTROL && xCursorPos > 0) {
+            int[] pos = lastWord();
+            if (pos[1] == currentLine && pos[0] <= xCursorPos) {
+                xCursorPos = pos[0];
+                maxXPos = xCursorPos;
+                return;
+            }
+            if (pos[1] < currentLine) {
+                currentLine = pos[1];
+                xCursorPos = pos[0];
+                maxXPos = xCursorPos;
+            }
+        } else {
+            if (currentLine >= 1 && xCursorPos == 1) {
+                currentLine--;
+                xCursorPos = inputs.get(currentLine).length();
+                maxXPos = xCursorPos;
+            } else {
+                xCursorPos--;
+                maxXPos = xCursorPos;
+            }
+        }
+    }
+
     public void addKeyToList(int e) {
         inputs.get(currentLine).insert(xCursorPos, (char) e);
         xCursorPos++;
     }
 
-    private void pasteInput() {
-        //TODO: add clipboard compatability
+    private void pasteInput(long window) {
+        String s = glfwGetClipboardString(window);
+        assert s != null;
+        String[] lines = s.split("\n");
+        for (String line : lines) {
+            inputs.get(currentLine).insert(xCursorPos, line);
+            if (lines.length > 1){
+                inputs.add(new StringBuilder());
+                currentLine += 1;
+                xCursorPos = 0;
+            }
+            xCursorPos += line.length();
+        }
     }
 
 
