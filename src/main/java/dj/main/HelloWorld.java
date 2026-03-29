@@ -20,14 +20,13 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class HelloWorld {
     private static final float Y_OFFSET = 10.0f;
+    private static final String FONT_NAME = "JetBrains mono";
     boolean hasStarted = false;
     Editor ed = new Editor();
     // The window handle
     private long window;
 
     public void run() {
-        System.out.println("Hello LWJGL " + Version.getVersion() + "!");
-
         init();
         loop();
 
@@ -49,7 +48,7 @@ public class HelloWorld {
             if (!glfwInit())
                 throw new IllegalStateException("Unable to initialize GLFW");
         } else if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            //windows version
+            //Windows version
             glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WIN32);
         } else {
             //arch version
@@ -68,10 +67,10 @@ public class HelloWorld {
         if (window == NULL) throw new RuntimeException("Failed to create the GLFW window");
 
         // Set up a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
+        glfwSetKeyCallback(window, (_, key, scancode, action, mods) -> {
             ed.processInput(key, action, mods);
         });
-        glfwSetCharCallback(window, (window, key) -> {
+        glfwSetCharCallback(window, (_, key) -> {
             ed.addKeyToList(key);
         });
 
@@ -117,7 +116,7 @@ public class HelloWorld {
         long vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS | NanoVGGL3.NVG_STENCIL_STROKES);
         if (vg == 0) throw new RuntimeException("NanoVG could not get initialize");
 
-        int font = NanoVG.nvgCreateFont(vg, "JetBrains mono", "src/main/resources/fonts/main.ttf");
+        int font = NanoVG.nvgCreateFont(vg, FONT_NAME, "src/main/resources/fonts/main.ttf");
         if (font == -1) System.err.println("Font not found.");
 
 
@@ -134,11 +133,7 @@ public class HelloWorld {
             int[] fbHeight = new int[1];
 
 
-            if (ed.inputs.size() == 1 && ed.inputs.getFirst().isEmpty()) {
-                hasStarted = false;
-            } else {
-                hasStarted = true;
-            }
+            hasStarted = ed.inputs.size() != 1 || !ed.inputs.getFirst().isEmpty();
 
             glfwGetWindowSize(window, width, height);
             glfwGetFramebufferSize(window, fbWidth, fbHeight);
@@ -152,7 +147,7 @@ public class HelloWorld {
 
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
             NanoVG.nvgFontSize(vg, fontSize);
-            NanoVG.nvgFontFace(vg, "JetBrains mono");
+            NanoVG.nvgFontFace(vg, FONT_NAME);
             NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
             float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
             int maxCharLine = (int) (width[0] / charWidth);
@@ -207,9 +202,9 @@ public class HelloWorld {
             if (!hasStarted) {
                 NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
                 NanoVG.nvgFontSize(vg, 54.0f);
-                NanoVG.nvgFontFace(vg, "JetBrains mono");
+                NanoVG.nvgFontFace(vg, FONT_NAME);
                 NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
-                NanoVG.nvgText(vg, 10.0f, height[0] - 100, "Press anything to start the editor");
+                NanoVG.nvgText(vg, 10.0f, height[0] - 100.0f, "Press anything to start the editor");
                 NanoVG.nvgEndFrame(vg);
             }
 

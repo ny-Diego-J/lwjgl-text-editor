@@ -1,6 +1,7 @@
 package dj.main;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
@@ -8,14 +9,20 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import java.util.logging.Logger;
 
 public class Editor {
-    public ArrayList<StringBuilder> inputs = new ArrayList<>();
-    public int currentLine = 0;
-    public int xCursorPos = 0;
-    public int maxXPos = xCursorPos;
-    Logger logger = Logger.getLogger(getClass().getName());
+    public List<StringBuilder> inputs;
+    public int currentLine;
+    public int xCursorPos;
+    public int maxXPos;
+    Logger logger;
 
 
     public Editor() {
+        this.inputs = new ArrayList<>();
+        this.currentLine = 0;
+        this.xCursorPos = 0;
+        this.maxXPos = 0;
+        this.logger = Logger.getLogger(getClass().getName());
+
         inputs.add(new StringBuilder());
     }
 
@@ -27,16 +34,37 @@ public class Editor {
     }
 
     private void inputSwitch(int key, int mod) {
-        switch (key) {
-            case GLFW_KEY_BACKSPACE -> deleteAtChar(0, mod);
-            case GLFW_KEY_DELETE -> deleteAtChar(1, mod);
-            case GLFW_KEY_TAB -> tabPressed();
-            case GLFW_KEY_UP -> cursorUp();
-            case GLFW_KEY_DOWN -> cursorDown();
-            case GLFW_KEY_LEFT -> cursorLeft(mod);
-            case GLFW_KEY_RIGHT -> cursorRight(mod);
-            case GLFW_KEY_ENTER -> enterPressed();
+        switch (mod) {
+            case GLFW_MOD_CONTROL:
+                switch (key) {
+                    case GLFW_KEY_V -> pasteInput();
+                    case GLFW_KEY_LEFT -> backwardWord();
+                    case GLFW_KEY_RIGHT -> forwardWord();
+                    case GLFW_KEY_BACKSPACE -> backspaceWord();
+                    case GLFW_KEY_DELETE -> deleteWord();
+                }
+                break;
+            case GLFW_MOD_ALT:
+                switch (key) {
+                    default -> break;
+                }
+            case GLFW_MOD_SHIFT:
+                switch (key) {
+                    default -> break;
+                }
+            default:
+                switch (key) {
+                    case GLFW_KEY_BACKSPACE -> backspaceChar();
+                    case GLFW_KEY_DELETE -> deleteChar();
+                    case GLFW_KEY_TAB -> tabPressed();
+                    case GLFW_KEY_UP -> cursorUp();
+                    case GLFW_KEY_DOWN -> cursorDown();
+                    case GLFW_KEY_LEFT -> backwardChar();
+                    case GLFW_KEY_RIGHT -> forwardChar();
+                    case GLFW_KEY_ENTER -> enterPressed();
+                }
         }
+
         if (mod == GLFW_MOD_CONTROL && key == GLFW_KEY_V) pasteInput();
 
     }
@@ -87,59 +115,59 @@ public class Editor {
         }
     }
 
-    private void cursorRight(int mod) {
-        if (mod == GLFW_MOD_CONTROL && xCursorPos < inputs.get(currentLine).length() - 1) {
-            int[] pos = nextWord();
-            if (pos[1] == currentLine && pos[0] >= xCursorPos) {
-                if (pos[0] + 1 == inputs.get(pos[1]).length()) {
-                    xCursorPos = pos[0] + 1;
-                    maxXPos = xCursorPos;
-                    return;
-                }
-                xCursorPos = pos[0];
-                maxXPos = xCursorPos;
-                return;
-            }
-            if (pos[1] > currentLine) {
-                currentLine = pos[1];
-            }
-        } else {
-            if (currentLine != inputs.size()) {
-                if (xCursorPos < inputs.get(currentLine).length()) {
-                    xCursorPos++;
-                    maxXPos = xCursorPos;
-                } else {
-                    if (currentLine != inputs.size() - 1) {
-                        xCursorPos = 0;
-                        maxXPos = xCursorPos;
-                        currentLine++;
-                    }
-                }
-            }
+    private void backwardWord() {
+        int[] pos = lastWord();
+        if (pos[1] == currentLine && pos[0] < xCursorPos) {
+            xCursorPos = pos[0];
+            maxXPos = xCursorPos;
+            return;
+        }
+        if (pos[1] < currentLine) {
+            currentLine = pos[1];
+            xCursorPos = pos[0];
+            maxXPos = xCursorPos;
         }
     }
 
-    private void cursorLeft(int mod) {
-        if (mod == GLFW_MOD_CONTROL && xCursorPos > 0) {
-            int[] pos = lastWord();
-            if (pos[1] == currentLine && pos[0] <= xCursorPos) {
-                xCursorPos = pos[0];
+    private void backwardChar() {
+        if (currentLine >= 1 && xCursorPos == 1) {
+            currentLine--;
+            xCursorPos = inputs.get(currentLine).length();
+            maxXPos = xCursorPos;
+        } else {
+            xCursorPos--;
+            maxXPos = xCursorPos;
+        }
+    }
+
+    private void forwardWord() {
+        int[] pos = nextWord();
+        if (pos[1] == currentLine && pos[0] >= xCursorPos) {
+            if (pos[0] + 1 == inputs.get(pos[1]).length()) {
+                xCursorPos = pos[0] + 1;
                 maxXPos = xCursorPos;
                 return;
             }
-            if (pos[1] < currentLine) {
-                currentLine = pos[1];
-                xCursorPos = pos[0];
-                maxXPos = xCursorPos;
-            }
-        } else {
-            if (currentLine >= 1 && xCursorPos == 1) {
-                currentLine--;
-                xCursorPos = inputs.get(currentLine).length();
+            xCursorPos = pos[0];
+            maxXPos = xCursorPos;
+            return;
+        }
+        if (pos[1] > currentLine) {
+            currentLine = pos[1];
+        }
+    }
+
+    private void forwardChar() {
+        if (currentLine != inputs.size()) {
+            if (xCursorPos < inputs.get(currentLine).length()) {
+                xCursorPos++;
                 maxXPos = xCursorPos;
             } else {
-                xCursorPos--;
-                maxXPos = xCursorPos;
+                if (currentLine != inputs.size() - 1) {
+                    xCursorPos = 0;
+                    maxXPos = xCursorPos;
+                    currentLine++;
+                }
             }
         }
     }
@@ -150,11 +178,12 @@ public class Editor {
     }
 
     private void pasteInput() {
-
+        //TODO: add clipboard compatability
     }
 
-    private void deleteAtChar(int mod, int alter) {
-        if (xCursorPos == 0 && currentLine >= 1 && mod == 0) {
+
+    private void backspaceChar() {
+        if (xCursorPos == 0 && currentLine >= 1) {
             xCursorPos = inputs.get(currentLine - 1).length();
             inputs.get(currentLine - 1).append(inputs.get(currentLine));
             inputs.remove(currentLine);
@@ -162,24 +191,23 @@ public class Editor {
             currentLine -= 1;
             return;
         }
-        if (alter == GLFW_MOD_CONTROL && mod == 0) backspaceWord();
-        if (alter == GLFW_MOD_CONTROL && mod == 1) deleteWord();
+        if (xCursorPos == 0 && currentLine == 0) {
+            return;
+        }
+        if (xCursorPos <= inputs.get(currentLine).length()) {
+            inputs.get(currentLine).replace(xCursorPos - 1, xCursorPos, "");
+            xCursorPos--;
+        }
+    }
 
-        if (mod == 1 && xCursorPos == inputs.get(currentLine).length() && currentLine != inputs.indexOf(inputs.getLast())) {
+    private void deleteChar() {
+        if (xCursorPos == inputs.get(currentLine).length() && currentLine != inputs.indexOf(inputs.getLast())) {
             inputs.get(currentLine).append(inputs.get(currentLine + 1));
             inputs.remove(currentLine + 1);
             return;
         }
-
-        if (xCursorPos == 0 && currentLine == 0 && mod == 0) {
-            return;
-        }
-
-        if (xCursorPos + mod <= inputs.get(currentLine).length()) {
-            inputs.get(currentLine).replace(xCursorPos - 1 + mod, xCursorPos + mod, "");
-            if (mod == 0) {
-                xCursorPos--;
-            }
+        if (xCursorPos + 1 <= inputs.get(currentLine).length()) {
+            inputs.get(currentLine).replace(xCursorPos, xCursorPos + 1, "");
         }
     }
 
@@ -225,7 +253,10 @@ public class Editor {
             } else pos[0]--;
         }
         while (inputs.get(currentLine).charAt(pos[0] - 1) != ' ') {
-            if (pos[0] == 1) break;
+            if (pos[0] == 1) {
+                pos[0]--;
+                break;
+            }
             pos[0]--;
         }
         return pos;
@@ -236,8 +267,6 @@ public class Editor {
         pos[0] = xCursorPos;  // x pos
         pos[1] = currentLine; // y pos
         do {
-            System.out.println(pos[0] + ", " + inputs.get(currentLine).length() + ", " + currentLine + ", " + inputs.size());
-
             if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
                 return pos;
             } else if (pos[0] + 1 == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
