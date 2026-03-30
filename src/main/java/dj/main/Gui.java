@@ -1,27 +1,21 @@
 package dj.main;
 
-import dj.main.exceptions.NanoVGNotInitialisedException;
-import dj.main.exceptions.WindowFailedToCreateException;
+import dj.main.exceptions.*;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
-import org.lwjgl.nanovg.NVGColor;
-import org.lwjgl.nanovg.NanoVG;
-import org.lwjgl.nanovg.NanoVGGL3;
+import org.lwjgl.nanovg.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
-
 import java.nio.*;
-import java.util.ArrayList;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
-
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class HelloWorld {
+public class Gui {
     private static final float Y_OFFSET = 10.0f;
     private static final String FONT_NAME = "JetBrains mono";
     private long window;
@@ -29,7 +23,7 @@ public class HelloWorld {
     Controller ct;
 
 
-    public HelloWorld(Controller c) {
+    public Gui(Controller c) {
         this.ct = c;
     }
 
@@ -107,11 +101,6 @@ public class HelloWorld {
     }
 
     private void loop() {
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
         GL.createCapabilities();
 
         // Set the clear color

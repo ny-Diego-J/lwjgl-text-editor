@@ -2,13 +2,27 @@ package dj.main;
 
 import java.io.*;
 
-public class SaveFile {
+public class FileManager {
     Controller ct;
 
-    public SaveFile(Controller ct) {
+    public FileManager(Controller ct) {
         this.ct = ct;
     }
 
+
+    public void readFile(String path) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String line;
+            boolean isFistLine = true;
+            while ((line = br.readLine()) != null) {
+                if (isFistLine) ct.ed.inputs.getFirst().append(line);
+                else ct.ed.inputs.add(new StringBuilder(line));
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 
     public void saveFile() {
         printToFile(ct.filePath, contentToString());

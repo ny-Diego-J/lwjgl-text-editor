@@ -5,15 +5,15 @@ import org.lwjgl.glfw.GLFW;
 import java.util.logging.Logger;
 
 public class Controller {
-    HelloWorld h;
+    public int currentLine;
+    public int xCursorPos;
+    public int maxXPos;
+    Gui gui;
     Editor ed;
     boolean hasStarted;
     InputHandler ih;
     CursorMovement cm;
-    SaveFile sf;
-    public int currentLine;
-    public int xCursorPos;
-    public int maxXPos;
+    FileManager fm;
     Logger logger;
     String filePath;
 
@@ -23,7 +23,7 @@ public class Controller {
         this.hasStarted = false;
         this.ih = new InputHandler(this);
         this.cm = new CursorMovement(this);
-        this.sf = new SaveFile(this);
+        this.fm = new FileManager(this);
         this.currentLine = 0;
         this.xCursorPos = 0;
         this.maxXPos = 0;
@@ -32,8 +32,10 @@ public class Controller {
 
     public void run() {
         System.out.println(filePath);
+        fm.readFile(filePath);
+
         GLFW.glfwInitHint(GLFW.GLFW_PLATFORM, GLFW.GLFW_PLATFORM_X11);
-        h = new HelloWorld(this);
-        h.run();
+        gui = new Gui(this);
+        gui.run();
     }
 }
