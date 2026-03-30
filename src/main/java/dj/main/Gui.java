@@ -20,6 +20,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Gui {
     private static final float Y_OFFSET = 10.0f;
     private static final String FONT_NAME = "JetBrains mono";
+    public int currentMod = 0;
     Logger logger = Logger.getLogger(getClass().getName());
     Controller ct;
     private long window;
@@ -73,9 +74,17 @@ public class Gui {
         if (window == NULL) throw new WindowFailedToCreateException();
 
         // Set up a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window, (w, key, scancode, action, mods) -> ct.ih.processInput(key, action, mods, w));
-        glfwSetCharCallback(window, (_, key) -> ct.ed.addKeyToList(key));
+        glfwSetKeyCallback(window, (w, key, scancode, action, mods) -> {
+            ct.ih.processInput(key, action, mods, w);
+            currentMod = mods;
 
+        });
+        glfwSetCharCallback(window, (_, key) -> ct.ed.addKeyToList(key));
+        glfwSetMouseButtonCallback(window, (w, button, action, mods) -> {
+            // Hier rufst du deinen Handler auf
+            ct.ih.mouseHandler(w, button, action);
+        });
+        glfwSetScrollCallback(window, (w, xOffset, yOffset) -> ct.ih.scrollWheelHandler(w, xOffset, yOffset));
 
         // Get the thread stack and push a new frame
         try (MemoryStack stack = stackPush()) {

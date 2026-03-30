@@ -1,5 +1,7 @@
 package dj.main;
 
+import java.util.logging.Logger;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 public class InputHandler {
@@ -9,8 +11,35 @@ public class InputHandler {
         this.ct = ct;
     }
 
-    public void processInput(int key, int action, int mod, long window) {
 
+    public void scrollWheelHandler(long w, double xOffset, double yOffset) {
+        //ct.logger.info(w + ";    " + xOffset + "    " + yOffset);
+        if (yOffset > 0) scrollUp();
+        else scrollDown();
+    }
+
+    private void scrollUp() {
+        if (ct.gui.currentMod == GLFW_MOD_CONTROL) {
+            System.out.println("zoom in");
+        } else {
+            System.out.println("up");
+        }
+    }
+
+    private void scrollDown() {
+        if (ct.gui.currentMod == GLFW_MOD_CONTROL) {
+            System.out.println("zoom out");
+        } else {
+            System.out.println("down");
+        }
+    }
+
+    public void mouseHandler(long window, int key, int action) {
+        //ct.logger.info(window + ";    " + key + "    " + action); //TODO: add backwards and forwards action
+    }
+
+    public void processInput(int key, int action, int mod, long window) {
+        //ct.logger.info(mod + "");
         if (action == GLFW_PRESS) inputSwitch(key, mod, window);
         if (action == GLFW_REPEAT) inputSwitch(key, mod, window);
 
