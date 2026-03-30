@@ -20,6 +20,9 @@ public class InputHandler {
 
     private void scrollUp() {
         if (ct.gui.currentMod == GLFW_MOD_CONTROL) {
+            if (ct.gui.fontSize < 1000.0f) {
+                ct.gui.fontSize += 2;
+            }
             System.out.println("zoom in");
         } else {
             System.out.println("up");
@@ -28,6 +31,9 @@ public class InputHandler {
 
     private void scrollDown() {
         if (ct.gui.currentMod == GLFW_MOD_CONTROL) {
+            if (ct.gui.fontSize > 1.0f) {
+                ct.gui.fontSize -= 2;
+            }
             System.out.println("zoom out");
         } else {
             System.out.println("down");

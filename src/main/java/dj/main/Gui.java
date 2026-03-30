@@ -23,6 +23,7 @@ public class Gui {
     public int currentMod = 0;
     Logger logger = Logger.getLogger(getClass().getName());
     Controller ct;
+    float fontSize = 54.0f;
     private long window;
 
 
@@ -154,7 +155,6 @@ public class Gui {
 
 
             float textHeight = Y_OFFSET;
-            float fontSize = 54.0f;
 
 
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
@@ -184,11 +184,16 @@ public class Gui {
             int xPos = ct.xCursorPos % maxCharLine;
             float baseHeight = ct.currentLine * fontSize + lineBreaks * fontSize;
 
+            float bannerCenterY = baseHeight + Y_OFFSET + (fontSize / 2.0f);
+
             NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
             NanoVG.nvgBeginPath(vg);
-            NanoVG.nvgMoveTo(vg, 0.0f, baseHeight + 35.0f);
-            NanoVG.nvgLineTo(vg, width[0], baseHeight + 35.0f);
+
+            NanoVG.nvgMoveTo(vg, 0.0f, bannerCenterY);
+            NanoVG.nvgLineTo(vg, width[0], bannerCenterY);
+
             NanoVG.nvgStrokeColor(vg, color);
+
             NanoVG.nvgStrokeWidth(vg, fontSize);
             NanoVG.nvgStroke(vg);
 
@@ -202,13 +207,19 @@ public class Gui {
             }
 
             NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
+            float cursorTop = baseHeight + Y_OFFSET;
+            float cursorBottom = cursorTop + fontSize;
+
+            NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
             NanoVG.nvgBeginPath(vg);
-            NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, baseHeight + 10.0f);
-            NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, baseHeight + fontSize);
+
+// X-Position bleibt gleich, aber Y wird dynamisch
+            NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, cursorTop);
+            NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, cursorBottom);
+
             NanoVG.nvgStrokeColor(vg, color);
-            NanoVG.nvgStrokeWidth(vg, 1.0f);
+            NanoVG.nvgStrokeWidth(vg, 2.0f);
             NanoVG.nvgStroke(vg);
-            NanoVG.nvgEndFrame(vg);
 
             if (!ct.hasStarted) {
                 NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
@@ -216,8 +227,8 @@ public class Gui {
                 NanoVG.nvgFontFace(vg, FONT_NAME);
                 NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
                 NanoVG.nvgText(vg, 10.0f, height[0] - 100.0f, "Press anything to start the editor");
-                NanoVG.nvgEndFrame(vg);
             }
+            NanoVG.nvgEndFrame(vg);
 
 
             glfwSwapBuffers(window); // swap the color buffers
