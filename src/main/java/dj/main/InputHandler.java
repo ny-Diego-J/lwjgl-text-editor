@@ -9,21 +9,22 @@ public class InputHandler {
         this.ct = ct;
     }
 
-    public void scrollWheelHandler(double yOffset) {
-        if (yOffset > 0) scrollUp();
-        else scrollDown();
+    public void scrollWheelHandler(long w, double yOffset) {
+        boolean ctrlPressed = glfwGetKey(w, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(w, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS;
+        if (yOffset > 0) scrollUp(ctrlPressed);
+        else scrollDown(ctrlPressed);
     }
 
-    private void scrollUp() {
-        if (ct.gui.currentMod == GLFW_MOD_CONTROL) {
+    private void scrollUp(boolean ctrlPressed) {
+        if (ctrlPressed) {
             if (ct.gui.fontSize < 1000.0f) ct.gui.fontSize += 2;
         } else {
             if (ct.gui.y_offset <= -10.0f) ct.gui.y_offset += 20.0f;
         }
     }
 
-    private void scrollDown() {
-        if (ct.gui.currentMod == GLFW_MOD_CONTROL) {
+    private void scrollDown(boolean ctrlPressed) {
+        if (ctrlPressed) {
             if (ct.gui.fontSize > 1.0f) ct.gui.fontSize -= 2;
         } else {
             ct.gui.y_offset -= 20.0f;
