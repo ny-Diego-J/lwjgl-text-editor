@@ -1,7 +1,5 @@
 package dj.main;
 
-import java.util.logging.Logger;
-
 import static org.lwjgl.glfw.GLFW.*;
 
 public class InputHandler {
@@ -25,7 +23,7 @@ public class InputHandler {
             }
             System.out.println("zoom in");
         } else {
-            System.out.println("up");
+            System.out.println("up"); //TODO: add scrolling down and up with cursor and if cursor is out of position
         }
     }
 

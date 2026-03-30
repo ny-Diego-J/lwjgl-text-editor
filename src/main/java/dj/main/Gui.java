@@ -213,7 +213,6 @@ public class Gui {
             NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
             NanoVG.nvgBeginPath(vg);
 
-// X-Position bleibt gleich, aber Y wird dynamisch
             NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, cursorTop);
             NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, cursorBottom);
 
