@@ -9,32 +9,24 @@ public class InputHandler {
         this.ct = ct;
     }
 
-
-    public void scrollWheelHandler(long w, double xOffset, double yOffset) {
-        //ct.logger.info(w + ";    " + xOffset + "    " + yOffset);
+    public void scrollWheelHandler(double yOffset) {
         if (yOffset > 0) scrollUp();
         else scrollDown();
     }
 
     private void scrollUp() {
         if (ct.gui.currentMod == GLFW_MOD_CONTROL) {
-            if (ct.gui.fontSize < 1000.0f) {
-                ct.gui.fontSize += 2;
-            }
-            System.out.println("zoom in");
+            if (ct.gui.fontSize < 1000.0f) ct.gui.fontSize += 2;
         } else {
-            System.out.println("up"); //TODO: add scrolling down and up with cursor and if cursor is out of position
+            if (ct.gui.y_offset <= -10.0f) ct.gui.y_offset += 20.0f;
         }
     }
 
     private void scrollDown() {
         if (ct.gui.currentMod == GLFW_MOD_CONTROL) {
-            if (ct.gui.fontSize > 1.0f) {
-                ct.gui.fontSize -= 2;
-            }
-            System.out.println("zoom out");
+            if (ct.gui.fontSize > 1.0f) ct.gui.fontSize -= 2;
         } else {
-            System.out.println("down");
+            ct.gui.y_offset -= 20.0f;
         }
     }
 
@@ -43,7 +35,7 @@ public class InputHandler {
     }
 
     public void processInput(int key, int action, int mod, long window) {
-        //ct.logger.info(mod + "");
+        ct.logger.info(mod + "");
         if (action == GLFW_PRESS) inputSwitch(key, mod, window);
         if (action == GLFW_REPEAT) inputSwitch(key, mod, window);
 

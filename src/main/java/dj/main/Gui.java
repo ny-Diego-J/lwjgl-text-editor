@@ -18,7 +18,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Gui {
-    private static final float Y_OFFSET = 10.0f;
+    public float y_offset = 10.0f;
     private static final String FONT_NAME = "JetBrains mono";
     public int currentMod = 0;
     Logger logger = Logger.getLogger(getClass().getName());
@@ -82,10 +82,9 @@ public class Gui {
         });
         glfwSetCharCallback(window, (_, key) -> ct.ed.addKeyToList(key));
         glfwSetMouseButtonCallback(window, (w, button, action, mods) -> {
-            // Hier rufst du deinen Handler auf
             ct.ih.mouseHandler(w, button, action);
         });
-        glfwSetScrollCallback(window, (w, xOffset, yOffset) -> ct.ih.scrollWheelHandler(w, xOffset, yOffset));
+        glfwSetScrollCallback(window, (w, xOffset, yOffset) -> ct.ih.scrollWheelHandler(yOffset));
 
         // Get the thread stack and push a new frame
         try (MemoryStack stack = stackPush()) {
@@ -154,7 +153,7 @@ public class Gui {
             float pxRatio = (float) fbWidth[0] / (float) width[0];
 
 
-            float textHeight = Y_OFFSET;
+            float textHeight = y_offset;
 
 
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
@@ -184,7 +183,7 @@ public class Gui {
             int xPos = ct.xCursorPos % maxCharLine;
             float baseHeight = ct.currentLine * fontSize + lineBreaks * fontSize;
 
-            float bannerCenterY = baseHeight + Y_OFFSET + (fontSize / 2.0f);
+            float bannerCenterY = baseHeight + y_offset + (fontSize / 2.0f);
 
             NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
             NanoVG.nvgBeginPath(vg);
@@ -207,7 +206,7 @@ public class Gui {
             }
 
             NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
-            float cursorTop = baseHeight + Y_OFFSET;
+            float cursorTop = baseHeight + y_offset;
             float cursorBottom = cursorTop + fontSize;
 
             NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
