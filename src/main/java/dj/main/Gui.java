@@ -6,9 +6,11 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.nanovg.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
+
 import java.nio.*;
 import java.util.*;
 import java.util.logging.Logger;
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -18,9 +20,9 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Gui {
     private static final float Y_OFFSET = 10.0f;
     private static final String FONT_NAME = "JetBrains mono";
-    private long window;
     Logger logger = Logger.getLogger(getClass().getName());
     Controller ct;
+    private long window;
 
 
     public Gui(Controller c) {
@@ -67,7 +69,7 @@ public class Gui {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
         // Create the window
-        window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
+        window = glfwCreateWindow(800, 600, "Glas editor - " + ct.filePath, NULL, NULL);
         if (window == NULL) throw new WindowFailedToCreateException();
 
         // Set up a key callback. It will be called every time a key is pressed, repeated or released.
@@ -110,8 +112,12 @@ public class Gui {
         // Initialize the Font
         long vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS | NanoVGGL3.NVG_STENCIL_STROKES);
         if (vg == 0) throw new NanoVGNotInitialisedException();
-
-        int font = NanoVG.nvgCreateFont(vg, FONT_NAME, "src/main/resources/fonts/main.ttf");
+        int font = -1;
+        if (System.getProperty("os.name").equalsIgnoreCase("Linux")) {
+            font = NanoVG.nvgCreateFont(vg, FONT_NAME, "/home/digi/projects/lwjgl-text-editor/src/main/resources/fonts/main.ttf");
+        } else {
+            font = NanoVG.nvgCreateFont(vg, FONT_NAME, "C:\\Users\\digij\\Documents\\GitHub\\ny\\lwjgl-text-editor\\src\\main\\resources\\fonts\\main.ttf");
+        }
         if (font == -1) logger.warning("Font not found.");
 
 
@@ -122,6 +128,7 @@ public class Gui {
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
         while (!glfwWindowShouldClose(window)) {
+            // positions
             int[] width = new int[1];
             int[] height = new int[1];
             int[] fbWidth = new int[1];
@@ -139,6 +146,7 @@ public class Gui {
 
             float textHeight = Y_OFFSET;
             float fontSize = 54.0f;
+
 
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
             NanoVG.nvgFontSize(vg, fontSize);

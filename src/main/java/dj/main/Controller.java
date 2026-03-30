@@ -34,6 +34,10 @@ public class Controller {
         System.out.println(filePath);
         fm.readFile(filePath);
 
+        if (!ed.inputs.isEmpty()) {
+            currentLine = ed.inputs.size() - 1;
+            xCursorPos = ed.inputs.get(currentLine).length();
+        }
         GLFW.glfwInitHint(GLFW.GLFW_PLATFORM, GLFW.GLFW_PLATFORM_X11);
         gui = new Gui(this);
         gui.run();

@@ -16,8 +16,10 @@ public class FileManager {
             String line;
             boolean isFistLine = true;
             while ((line = br.readLine()) != null) {
-                if (isFistLine) ct.ed.inputs.getFirst().append(line);
-                else ct.ed.inputs.add(new StringBuilder(line));
+                if (isFistLine) {
+                    ct.ed.inputs.getFirst().append(line);
+                    isFistLine = false;
+                } else ct.ed.inputs.add(new StringBuilder(line));
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
