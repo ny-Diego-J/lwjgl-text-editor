@@ -19,7 +19,7 @@ public class InputHandler {
         if (ctrlPressed) {
             if (ct.gui.fontSize < 1000.0f) ct.gui.fontSize += 2;
         } else {
-            if (ct.gui.y_offset <= -10.0f) ct.gui.y_offset += 20.0f;
+            if (ct.gui.yOffset <= -10.0f) ct.gui.yOffset += 20.0f;
         }
     }
 
@@ -27,7 +27,7 @@ public class InputHandler {
         if (ctrlPressed) {
             if (ct.gui.fontSize > 1.0f) ct.gui.fontSize -= 2;
         } else {
-            if (ct.gui.fontSize * ct.gui.finalHeight * -1 < ct.gui.y_offset) ct.gui.y_offset -= 20.0f;
+            if (ct.gui.fontSize * ct.gui.finalHeight * -1 - 3000.0f < ct.gui.yOffset) ct.gui.yOffset -= 20.0f;
         }
     }
 

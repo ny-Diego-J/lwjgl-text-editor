@@ -20,8 +20,9 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Gui {
+    private static final String OPERATING_SYSTEM = "os.name";
     private static final String FONT_NAME = "JetBrains mono";
-    public float y_offset = 10.0f;
+    public float yOffset = 10.0f;
     Logger logger = Logger.getLogger(getClass().getName());
     Controller ct;
     float fontSize = 54.0f;
@@ -55,9 +56,9 @@ public class Gui {
         GLFWErrorCallback.createPrint(System.err).set();
 
 
-        if (System.getProperty("os.name").equalsIgnoreCase("Linux")) {
+        if (System.getProperty(OPERATING_SYSTEM).equalsIgnoreCase("Linux")) {
             if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
-        } else if (System.getProperty("os.name").toLowerCase().contains("win")) {
+        } else if (System.getProperty(OPERATING_SYSTEM).toLowerCase().contains("win")) {
             //Windows version
             glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WIN32);
         } else {
@@ -158,7 +159,7 @@ public class Gui {
         long vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS | NanoVGGL3.NVG_STENCIL_STROKES);
         if (vg == 0) throw new NanoVGNotInitialisedException();
         int font = -1;
-        if (System.getProperty("os.name").equalsIgnoreCase("Linux")) {
+        if (System.getProperty(OPERATING_SYSTEM).equalsIgnoreCase("Linux")) {
             font = NanoVG.nvgCreateFont(vg, FONT_NAME, "/home/digi/projects/lwjgl-text-editor/src/main/resources/fonts/main.ttf");
         } else {
             font = NanoVG.nvgCreateFont(vg, FONT_NAME, "C:\\Users\\digij\\Documents\\GitHub\\ny\\lwjgl-text-editor\\src\\main\\resources\\fonts\\main.ttf");
@@ -189,7 +190,7 @@ public class Gui {
             float pxRatio = (float) fbWidth[0] / (float) width[0];
 
 
-            float textHeight = y_offset;
+            float textHeight = yOffset;
 
 
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
@@ -218,7 +219,7 @@ public class Gui {
 
             int xPos = ct.xCursorPos % maxCharLine;
             float baseHeight = ct.currentLine * fontSize + lineBreaks * fontSize;
-            float bannerCenterY = baseHeight + y_offset + (fontSize / 2.0f);
+            float bannerCenterY = baseHeight + yOffset + (fontSize / 2.0f);
 
             NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
             NanoVG.nvgBeginPath(vg);
@@ -242,7 +243,7 @@ public class Gui {
             finalHeight = textHeight;
 
             NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
-            float cursorTop = baseHeight + y_offset;
+            float cursorTop = baseHeight + yOffset;
             float cursorBottom = cursorTop + fontSize;
 
             NanoVG.nvgBeginPath(vg);
