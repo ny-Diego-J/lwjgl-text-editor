@@ -10,11 +10,11 @@ public class Controller {
     public Gui gui;
     public Editor ed;
     public boolean hasStarted;
-    InputHandler ih;
-    FileManager fm;
-    Logger logger;
-    String filePath;
-    PrintText pt;
+    public InputHandler ih;
+    public FileManager fm;
+    public Logger logger;
+    public String filePath;
+    public PrintText pt;
 
     public Controller(String filePath) {
         this.filePath = filePath;

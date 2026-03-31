@@ -8,23 +8,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrintText {
-    Controller ct;
-    int currentLine;
-    int xCursorPos;
+    private Controller ct;
+    private int currentLine;
+    private int xCursorPos;
 
 
     public PrintText(Controller ct) {
         this.ct = ct;
     }
 
-    public void printText(Gui g, long vg, int[] width, int[] fbWidth, int[] height, NVGColor color) {
+    public void printText(long vg, int[] width, int[] fbWidth, int[] height, NVGColor color) {
         currentLine = ct.ed.getCurrentLine();
         xCursorPos = ct.ed.getxCursorPos();
         float pxRatio = (float) fbWidth[0] / (float) width[0];
-        float textHeight = g.yOffset;
+        float textHeight = ct.gui.getyOffset();
+        float fontSize = ct.gui.getFontSize();
+        float yOffset = ct.gui.getyOffset();
 
         NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
-        NanoVG.nvgFontSize(vg, g.fontSize);
+        NanoVG.nvgFontSize(vg, fontSize);
         NanoVG.nvgFontFace(vg, Gui.FONT_NAME);
         NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
         float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
@@ -33,8 +35,8 @@ public class PrintText {
 
 
         int xPos = xCursorPos % maxCharLine;
-        float baseHeight = currentLine * g.fontSize + lineBreaks * g.fontSize;
-        float bannerCenterY = baseHeight + g.yOffset + (g.fontSize / 2.0f);
+        float baseHeight = currentLine * fontSize + lineBreaks * fontSize;
+        float bannerCenterY = baseHeight + yOffset + (fontSize / 2.0f);
 
         NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
         NanoVG.nvgBeginPath(vg);
@@ -43,7 +45,7 @@ public class PrintText {
         NanoVG.nvgLineTo(vg, width[0], bannerCenterY);
 
         NanoVG.nvgStrokeColor(vg, color);
-        NanoVG.nvgStrokeWidth(vg, g.fontSize);
+        NanoVG.nvgStrokeWidth(vg, fontSize);
         NanoVG.nvgStroke(vg);
 
 
@@ -51,15 +53,13 @@ public class PrintText {
             ArrayList<String> lines = getLines(s, width[0], charWidth);
             for (String st : lines) {
                 NanoVG.nvgText(vg, 10.0f, textHeight, st);
-                textHeight += g.fontSize;
+                textHeight += fontSize;
             }
         }
 
-        g.finalTextHeight = textHeight;
-
         NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
-        float cursorTop = baseHeight + g.yOffset;
-        float cursorBottom = cursorTop + g.fontSize;
+        float cursorTop = baseHeight + yOffset;
+        float cursorBottom = cursorTop + fontSize;
 
         NanoVG.nvgBeginPath(vg);
         NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, cursorTop);

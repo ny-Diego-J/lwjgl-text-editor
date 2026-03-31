@@ -3,7 +3,7 @@ package dj.main;
 import java.io.*;
 
 public class FileManager {
-    Controller ct;
+    private Controller ct;
 
     public FileManager(Controller ct) {
         this.ct = ct;
@@ -17,9 +17,9 @@ public class FileManager {
             boolean isFistLine = true;
             while ((line = br.readLine()) != null) {
                 if (isFistLine) {
-                    ct.ed.inputs.getFirst().append(line);
+                    ct.ed.appendAtFirstLine(line);
                     isFistLine = false;
-                } else ct.ed.inputs.add(new StringBuilder(line));
+                } else ct.ed.addLineWithText(line);
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -27,16 +27,7 @@ public class FileManager {
     }
 
     public void saveFile() {
-        printToFile(ct.filePath, contentToString());
-    }
-
-    private String contentToString() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < ct.ed.inputs.size(); i++) {
-            sb.append(ct.ed.inputs.get(i));
-            if (i != ct.ed.inputs.size() - 1) sb.append("\n");
-        }
-        return sb.toString();
+        printToFile(ct.filePath, ct.ed.contentToString());
     }
 
     private void printToFile(String header, String content) {

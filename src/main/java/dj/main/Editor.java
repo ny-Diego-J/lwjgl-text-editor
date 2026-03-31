@@ -7,8 +7,8 @@ import static org.lwjgl.glfw.GLFW.*;
 
 
 public class Editor {
-    public List<StringBuilder> inputs;
-    Controller ct;
+    private List<StringBuilder> inputs;
+    private Controller ct;
     private int currentLine;
     private int xCursorPos;
     private int maxXPos;
@@ -229,6 +229,7 @@ public class Editor {
     }
 
     public void forwardWord() {
+        //TODO: make next going next line when at end of line
         int[] pos = ct.ed.nextWord();
         if (pos[1] == currentLine && pos[0] >= xCursorPos) {
             if (pos[0] + 1 == ct.ed.inputs.get(pos[1]).length()) {
@@ -310,5 +311,22 @@ public class Editor {
             wordList.add(sb.toString());
         }
         return wordList;
+    }
+
+    public void addLineWithText(String text) {
+        inputs.add(new StringBuilder(text));
+    }
+
+    public void appendAtFirstLine(String text) {
+        inputs.getFirst().append(text);
+    }
+
+    public String contentToString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ct.ed.inputs.size(); i++) {
+            sb.append(ct.ed.inputs.get(i));
+            if (i != ct.ed.inputs.size() - 1) sb.append("\n");
+        }
+        return sb.toString();
     }
 }

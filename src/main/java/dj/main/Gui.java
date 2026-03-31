@@ -25,15 +25,20 @@ public class Gui {
     private Logger logger = Logger.getLogger(getClass().getName());
     private static final String OPERATING_SYSTEM = "os.name";
     public static final String FONT_NAME = "JetBrains mono";
-    public float fontSize = 54.0f;
-    public float finalTextHeight = 0.0f;
-    public float yOffset = 10.0f;
+    private float fontSize = 54.0f;
+    private float yOffset = 10.0f;
 
+    public float getFontSize() {
+        return fontSize;
+    }
+
+    public float getyOffset() {
+        return yOffset;
+    }
 
     public Gui(Controller c) {
         this.ct = c;
     }
-
 
     public void run() {
         logger.info("Hello LWJGL " + Version.getVersion() + "!");
@@ -188,7 +193,7 @@ public class Gui {
             glViewport(0, 0, fbWidth[0], fbHeight[0]);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// clear the framebuffer
 
-            ct.pt.printText(this, vg, width, fbWidth, height, color);
+            ct.pt.printText(vg, width, fbWidth, height, color);
 
             glfwSwapBuffers(window); // swap the color buffers
 
