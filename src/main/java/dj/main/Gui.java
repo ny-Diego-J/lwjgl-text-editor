@@ -20,14 +20,14 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Gui {
-    private static final String OPERATING_SYSTEM = "os.name";
-    private static final String FONT_NAME = "JetBrains mono";
-    public float yOffset = 10.0f;
-    Logger logger = Logger.getLogger(getClass().getName());
-    Controller ct;
-    float fontSize = 54.0f;
-    float finalHeight = 0;
+    private Controller ct;
     private long window;
+    private Logger logger = Logger.getLogger(getClass().getName());
+    private static final String OPERATING_SYSTEM = "os.name";
+    public static final String FONT_NAME = "JetBrains mono";
+    public float fontSize = 54.0f;
+    public float finalTextHeight = 0.0f;
+    public float yOffset = 10.0f;
 
 
     public Gui(Controller c) {
@@ -180,89 +180,15 @@ public class Gui {
             int[] fbWidth = new int[1];
             int[] fbHeight = new int[1];
 
-
-            ct.hasStarted = ct.ed.inputs.size() != 1 || !ct.ed.inputs.getFirst().isEmpty();
+            List<String> wordlist = ct.ed.getWordList();
+            ct.hasStarted = wordlist.size() != 1 || !wordlist.getFirst().isEmpty();
 
             glfwGetWindowSize(window, width, height);
             glfwGetFramebufferSize(window, fbWidth, fbHeight);
             glViewport(0, 0, fbWidth[0], fbHeight[0]);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// clear the framebuffer
-            float pxRatio = (float) fbWidth[0] / (float) width[0];
 
-
-            float textHeight = yOffset;
-
-
-            NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
-            NanoVG.nvgFontSize(vg, fontSize);
-            NanoVG.nvgFontFace(vg, FONT_NAME);
-            NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
-            float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
-            int maxCharLine = (int) (width[0] / charWidth);
-            int lineBreaks = 0;
-            for (int i = 0; i < ct.currentLine + 1; i++) {
-                if (i == ct.currentLine) {
-                    if (ct.xCursorPos + 1 > maxCharLine) {
-                        for (int j = 0; j < ct.ed.inputs.get(i).length() / maxCharLine; j++) {
-                            lineBreaks++;
-                        }
-                    }
-                } else {
-                    if (ct.ed.inputs.get(i).length() > maxCharLine) {
-                        for (int j = 0; j < ct.ed.inputs.get(i).length() / maxCharLine; j++) {
-                            lineBreaks++;
-                        }
-                    }
-                }
-            }
-
-
-            int xPos = ct.xCursorPos % maxCharLine;
-            float baseHeight = ct.currentLine * fontSize + lineBreaks * fontSize;
-            float bannerCenterY = baseHeight + yOffset + (fontSize / 2.0f);
-
-            NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
-            NanoVG.nvgBeginPath(vg);
-
-            NanoVG.nvgMoveTo(vg, 0.0f, bannerCenterY);
-            NanoVG.nvgLineTo(vg, width[0], bannerCenterY);
-
-            NanoVG.nvgStrokeColor(vg, color);
-            NanoVG.nvgStrokeWidth(vg, fontSize);
-            NanoVG.nvgStroke(vg);
-
-
-            for (StringBuilder sb : ct.ed.inputs) {
-                ArrayList<String> lines = getLines(sb.toString(), width[0], charWidth);
-                for (String s : lines) {
-                    NanoVG.nvgText(vg, 10.0f, textHeight, s);
-                    textHeight += fontSize;
-                }
-            }
-
-            finalHeight = textHeight;
-
-            NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
-            float cursorTop = baseHeight + yOffset;
-            float cursorBottom = cursorTop + fontSize;
-
-            NanoVG.nvgBeginPath(vg);
-            NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, cursorTop);
-            NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, cursorBottom);
-
-            NanoVG.nvgStrokeColor(vg, color);
-            NanoVG.nvgStrokeWidth(vg, 2.0f);
-            NanoVG.nvgStroke(vg);
-
-            if (!ct.hasStarted) {
-                NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
-                NanoVG.nvgFontSize(vg, 54.0f);
-                NanoVG.nvgFontFace(vg, FONT_NAME);
-                NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
-                NanoVG.nvgText(vg, 10.0f, height[0] - 100.0f, "Press anything to start the editor");
-            }
-            NanoVG.nvgEndFrame(vg);
-
+            ct.pt.printText(this, vg, width, fbWidth, height, color);
 
             glfwSwapBuffers(window); // swap the color buffers
 
@@ -272,32 +198,11 @@ public class Gui {
         }
     }
 
-    private ArrayList<String> getLines(String input, int width, float charWidth) {
-        ArrayList<String> lines = new ArrayList<>();
-        if (charWidth * input.length() > width) {
-            splitLine(lines, input, width, charWidth, 0);
-            int i = 0;
-            while (i < lines.size()) {
-                if (charWidth * lines.get(i).length() > width) {
-                    String replaceLine = lines.get(i);
-                    lines.remove(i);
-                    splitLine(lines, replaceLine, width, charWidth, i);
-                }
-                i++;
-            }
-        } else {
-            lines.add(input);
-        }
-        return lines;
+    public void addFontSize(float amount) {
+        if (fontSize < 1000.0f) fontSize += amount;
     }
 
-    private void splitLine(ArrayList<String> lines, String input, int width, float charWidth, int currentIndex) {
-        if (charWidth * input.length() > width) {
-            float amount = width / charWidth;
-            lines.add(currentIndex, input.substring((int) amount));
-            lines.add(currentIndex, input.substring(0, (int) amount));
-        } else {
-            lines.add(input);
-        }
+    public void scrollUp(float amount) {
+        if (yOffset <= -10.0f) yOffset += amount;
     }
 }

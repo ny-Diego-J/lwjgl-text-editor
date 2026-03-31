@@ -17,17 +17,17 @@ public class InputHandler {
 
     private void scrollUp(boolean ctrlPressed) {
         if (ctrlPressed) {
-            if (ct.gui.fontSize < 1000.0f) ct.gui.fontSize += 2;
+            ct.gui.addFontSize(2.0f);
         } else {
-            if (ct.gui.yOffset <= -10.0f) ct.gui.yOffset += 20.0f;
+            ct.gui.scrollUp(20.0f);
         }
     }
 
     private void scrollDown(boolean ctrlPressed) {
         if (ctrlPressed) {
-            if (ct.gui.fontSize > 1.0f) ct.gui.fontSize -= 2;
+            ct.gui.addFontSize(-2.0f);
         } else {
-            if (ct.gui.fontSize * ct.gui.finalHeight * -1 - 3000.0f < ct.gui.yOffset) ct.gui.yOffset -= 20.0f;
+            ct.gui.scrollUp(-20.0f);
         }
     }
 
@@ -36,7 +36,7 @@ public class InputHandler {
     }
 
     public void processInput(int key, int action, int mod, long window) {
-        ct.logger.info(mod + "");
+        //ct.logger.info(mod + "");
         if (action == GLFW_PRESS) inputSwitch(key, mod, window);
         if (action == GLFW_REPEAT) inputSwitch(key, mod, window);
 
@@ -47,8 +47,8 @@ public class InputHandler {
             case GLFW_MOD_CONTROL:
                 switch (key) {
                     case GLFW_KEY_V -> ct.ed.pasteInput(window);
-                    case GLFW_KEY_LEFT -> ct.cm.backwardWord();
-                    case GLFW_KEY_RIGHT -> ct.cm.forwardWord();
+                    case GLFW_KEY_LEFT -> ct.ed.backwardWord();
+                    case GLFW_KEY_RIGHT -> ct.ed.forwardWord();
                     case GLFW_KEY_BACKSPACE -> ct.ed.backspaceWord();
                     case GLFW_KEY_DELETE -> ct.ed.deleteWord();
                     case GLFW_KEY_S -> ct.fm.saveFile();
@@ -64,11 +64,11 @@ public class InputHandler {
                     case GLFW_KEY_BACKSPACE -> ct.ed.backspaceChar();
                     case GLFW_KEY_DELETE -> ct.ed.deleteChar();
                     case GLFW_KEY_TAB -> ct.ed.tabPressed();
-                    case GLFW_KEY_UP -> ct.cm.cursorUp();
-                    case GLFW_KEY_DOWN -> ct.cm.cursorDown();
-                    case GLFW_KEY_LEFT -> ct.cm.backwardChar();
-                    case GLFW_KEY_RIGHT -> ct.cm.forwardChar();
-                    case GLFW_KEY_ENTER -> ct.cm.enterPressed();
+                    case GLFW_KEY_UP -> ct.ed.cursorUp();
+                    case GLFW_KEY_DOWN -> ct.ed.cursorDown();
+                    case GLFW_KEY_LEFT -> ct.ed.backwardChar();
+                    case GLFW_KEY_RIGHT -> ct.ed.forwardChar();
+                    case GLFW_KEY_ENTER -> ct.ed.enterPressed();
                 }
         }
     }

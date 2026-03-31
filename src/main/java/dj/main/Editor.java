@@ -9,24 +9,34 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Editor {
     public List<StringBuilder> inputs;
     Controller ct;
+    private int currentLine;
+    private int xCursorPos;
+    private int maxXPos;
 
     public Editor(Controller ct) {
         this.inputs = new ArrayList<>();
         this.ct = ct;
+        this.currentLine = 0;
+        this.xCursorPos = 0;
+        this.maxXPos = 0;
+        if (!inputs.isEmpty()) {
+            currentLine = inputs.size() - 1;
+            xCursorPos = inputs.get(currentLine).length();
+        }
         inputs.add(new StringBuilder());
     }
 
 
     public void tabPressed() {
-        inputs.get(ct.currentLine).insert(ct.xCursorPos, "    ");
-        ct.xCursorPos += 4;
-        ct.maxXPos = ct.xCursorPos;
+        inputs.get(currentLine).insert(xCursorPos, "    ");
+        xCursorPos += 4;
+        maxXPos = xCursorPos;
     }
 
 
     public void addKeyToList(int e) {
-        inputs.get(ct.currentLine).insert(ct.xCursorPos, (char) e);
-        ct.xCursorPos++;
+        inputs.get(currentLine).insert(xCursorPos, (char) e);
+        xCursorPos++;
     }
 
     public void pasteInput(long window) {
@@ -34,85 +44,85 @@ public class Editor {
         assert s != null;
         String[] lines = s.split("\n");
         for (String line : lines) {
-            inputs.get(ct.currentLine).insert(ct.xCursorPos, line);
+            inputs.get(currentLine).insert(xCursorPos, line);
             if (lines.length > 1) {
                 inputs.add(new StringBuilder());
-                ct.currentLine += 1;
-                ct.xCursorPos = 0;
+                currentLine += 1;
+                xCursorPos = 0;
             }
-            ct.xCursorPos += line.length();
+            xCursorPos += line.length();
         }
     }
 
 
     public void backspaceChar() {
-        if (ct.xCursorPos == 0 && ct.currentLine >= 1) {
-            ct.xCursorPos = inputs.get(ct.currentLine - 1).length();
-            inputs.get(ct.currentLine - 1).append(inputs.get(ct.currentLine));
-            inputs.remove(ct.currentLine);
+        if (xCursorPos == 0 && currentLine >= 1) {
+            xCursorPos = inputs.get(currentLine - 1).length();
+            inputs.get(currentLine - 1).append(inputs.get(currentLine));
+            inputs.remove(currentLine);
 
-            ct.currentLine -= 1;
+            currentLine -= 1;
             return;
         }
-        if (ct.xCursorPos == 0 && ct.currentLine == 0) {
+        if (xCursorPos == 0 && currentLine == 0) {
             return;
         }
-        if (ct.xCursorPos <= inputs.get(ct.currentLine).length()) {
-            inputs.get(ct.currentLine).replace(ct.xCursorPos - 1, ct.xCursorPos, "");
-            ct.xCursorPos--;
+        if (xCursorPos <= inputs.get(currentLine).length()) {
+            inputs.get(currentLine).replace(xCursorPos - 1, xCursorPos, "");
+            xCursorPos--;
         }
     }
 
     public void deleteChar() {
-        if (ct.xCursorPos == inputs.get(ct.currentLine).length() && ct.currentLine != inputs.indexOf(inputs.getLast())) {
-            inputs.get(ct.currentLine).append(inputs.get(ct.currentLine + 1));
-            inputs.remove(ct.currentLine + 1);
+        if (xCursorPos == inputs.get(currentLine).length() && currentLine != inputs.indexOf(inputs.getLast())) {
+            inputs.get(currentLine).append(inputs.get(currentLine + 1));
+            inputs.remove(currentLine + 1);
             return;
         }
-        if (ct.xCursorPos + 1 <= inputs.get(ct.currentLine).length()) {
-            inputs.get(ct.currentLine).replace(ct.xCursorPos, ct.xCursorPos + 1, "");
+        if (xCursorPos + 1 <= inputs.get(currentLine).length()) {
+            inputs.get(currentLine).replace(xCursorPos, xCursorPos + 1, "");
         }
     }
 
     public void backspaceWord() {
         int[] pos = lastWord();
-        if (pos[1] == ct.currentLine && pos[0] <= ct.xCursorPos) {
-            inputs.get(ct.currentLine).replace(pos[0], ct.xCursorPos, "");
-            ct.xCursorPos = pos[0];
+        if (pos[1] == currentLine && pos[0] <= xCursorPos) {
+            inputs.get(currentLine).replace(pos[0], xCursorPos, "");
+            xCursorPos = pos[0];
             return;
         }
-        if (pos[1] < ct.currentLine) {
-            ct.currentLine = pos[1];
-            ct.xCursorPos = pos[0];
+        if (pos[1] < currentLine) {
+            currentLine = pos[1];
+            xCursorPos = pos[0];
         }
     }
 
     public void deleteWord() {
         int[] pos = nextWord();
-        if (pos[1] == ct.currentLine && pos[0] >= ct.xCursorPos) {
-            inputs.get(ct.currentLine).replace(ct.xCursorPos, pos[0], "");
+        if (pos[1] == currentLine && pos[0] >= xCursorPos) {
+            inputs.get(currentLine).replace(xCursorPos, pos[0], "");
             return;
         }
-        if (pos[1] > ct.currentLine) {
-            ct.currentLine = pos[1];
+        if (pos[1] > currentLine) {
+            currentLine = pos[1];
         }
     }
 
     public int[] lastWord() {
         int[] pos = new int[2];
-        pos[0] = ct.xCursorPos;  // x pos
-        pos[1] = ct.currentLine; // y pos
+        pos[0] = xCursorPos;  // x pos
+        pos[1] = currentLine; // y pos
         if (pos[0] != 0) {
-            while (inputs.get(ct.currentLine).charAt(pos[0] - 1) == ' ') {
-                if (pos[0] == 1 && ct.currentLine >= 1) {
-                    pos[0] = inputs.get(ct.currentLine - 1).length();
+            while (inputs.get(currentLine).charAt(pos[0] - 1) == ' ') {
+                if (pos[0] == 1 && currentLine >= 1) {
+                    pos[0] = inputs.get(currentLine - 1).length();
                     pos[1] -= 1;
                     return pos;
                 } else if (inputs.getFirst().isEmpty() && pos[1] == 0) {
-                    pos[0] = ct.xCursorPos;
-                    pos[1] = ct.currentLine;
+                    pos[0] = xCursorPos;
+                    pos[1] = currentLine;
                     return pos;
-                } else if (pos[0] == 0 && ct.currentLine == 0) {
+                } else if (pos[0] == 0 && currentLine == 0) {
                     return pos;
                 } else pos[0]--;
             }
@@ -123,7 +133,7 @@ public class Editor {
             }
             return pos;
         }
-        while (inputs.get(ct.currentLine).charAt(pos[0] - 1) != ' ') {
+        while (inputs.get(currentLine).charAt(pos[0] - 1) != ' ') {
             if (pos[0] == 1) {
                 pos[0]--;
                 break;
@@ -135,24 +145,170 @@ public class Editor {
 
     public int[] nextWord() {
         int[] pos = new int[2];
-        pos[0] = ct.xCursorPos;  // x pos
-        pos[1] = ct.currentLine; // y pos
+        pos[0] = xCursorPos;  // x pos
+        pos[1] = currentLine; // y pos
         do {
-            if (pos[0] == inputs.get(ct.currentLine).length() && ct.currentLine + 1 < inputs.size()) {
+            if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
                 return pos;
-            } else if (pos[0] + 1 == inputs.get(ct.currentLine).length() && ct.currentLine + 1 < inputs.size()) {
+            } else if (pos[0] + 1 == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
                 return pos;
-            } else if (pos[0] == inputs.get(ct.currentLine).length() && ct.currentLine + 1 == inputs.size()) {
+            } else if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 == inputs.size()) {
                 return pos;
-            } else if (pos[0] + 1 == inputs.get(ct.currentLine).length() && ct.currentLine + 1 == inputs.size()) {
+            } else if (pos[0] + 1 == inputs.get(currentLine).length() && currentLine + 1 == inputs.size()) {
                 return pos;
             } else pos[0]++;
-        } while (inputs.get(ct.currentLine).charAt(pos[0]) == ' ');
-        while (inputs.get(ct.currentLine).charAt(pos[0]) != ' ') {
-            if (pos[0] == inputs.get(ct.currentLine).length() - 1) break;
+        } while (inputs.get(currentLine).charAt(pos[0]) == ' ');
+        while (inputs.get(currentLine).charAt(pos[0]) != ' ') {
+            if (pos[0] == inputs.get(currentLine).length() - 1) break;
             pos[0]++;
         }
         return pos;
     }
-}
 
+    public void cursorUp() {
+        if (currentLine >= 1) {
+            currentLine--;
+            if (xCursorPos < maxXPos) {
+                if (maxXPos < ct.ed.inputs.get(currentLine).length()) {
+                    xCursorPos = maxXPos;
+                } else {
+                    xCursorPos = ct.ed.inputs.get(currentLine).length();
+                }
+            } else if (xCursorPos > ct.ed.inputs.get(currentLine).length()) {
+                xCursorPos = ct.ed.inputs.get(currentLine).length();
+            }
+        }
+    }
+
+    public void cursorDown() {
+        if (currentLine + 1 < ct.ed.inputs.size()) {
+            currentLine++;
+            if (xCursorPos < maxXPos) {
+                if (maxXPos < ct.ed.inputs.get(currentLine).length()) {
+                    xCursorPos = maxXPos;
+                } else {
+                    xCursorPos = ct.ed.inputs.get(currentLine).length();
+                }
+            } else if (xCursorPos > ct.ed.inputs.get(currentLine).length())
+                xCursorPos = ct.ed.inputs.get(currentLine).length();
+
+        }
+    }
+
+    public void backwardWord() {
+        int[] pos = ct.ed.lastWord();
+        if (pos[1] == currentLine && pos[0] < xCursorPos) {
+            xCursorPos = pos[0];
+            maxXPos = xCursorPos;
+            return;
+        }
+        if (pos[1] < currentLine) {
+            currentLine = pos[1];
+            xCursorPos = pos[0];
+            maxXPos = xCursorPos;
+        }
+    }
+
+    public void backwardChar() {
+        if (currentLine >= 1 && xCursorPos == 1) {
+            currentLine--;
+            xCursorPos = ct.ed.inputs.get(currentLine).length();
+            maxXPos = xCursorPos;
+        } else {
+            if (xCursorPos == 0) {
+                if (currentLine > 0) {
+                    currentLine--;
+                    xCursorPos = ct.ed.inputs.get(currentLine).length();
+                    maxXPos = xCursorPos;
+                }
+                return;
+            }
+            xCursorPos--;
+            maxXPos = xCursorPos;
+        }
+    }
+
+    public void forwardWord() {
+        int[] pos = ct.ed.nextWord();
+        if (pos[1] == currentLine && pos[0] >= xCursorPos) {
+            if (pos[0] + 1 == ct.ed.inputs.get(pos[1]).length()) {
+                xCursorPos = pos[0] + 1;
+                maxXPos = xCursorPos;
+                return;
+            }
+            xCursorPos = pos[0];
+            maxXPos = xCursorPos;
+            return;
+        }
+        if (pos[1] > currentLine) {
+            currentLine = pos[1];
+        }
+    }
+
+    public void forwardChar() {
+        if (currentLine != ct.ed.inputs.size()) {
+            if (xCursorPos < ct.ed.inputs.get(currentLine).length()) {
+                xCursorPos++;
+                maxXPos = xCursorPos;
+            } else {
+                if (currentLine != ct.ed.inputs.size() - 1) {
+                    xCursorPos = 0;
+                    maxXPos = xCursorPos;
+                    currentLine++;
+                }
+            }
+        }
+    }
+
+    public void cursorLeft(int mod) {
+        if (mod == GLFW_MOD_CONTROL && xCursorPos > 0) {
+            int[] pos = ct.ed.lastWord();
+            if (pos[1] == currentLine && pos[0] <= xCursorPos) {
+                xCursorPos = pos[0];
+                maxXPos = xCursorPos;
+                return;
+            }
+            if (pos[1] < currentLine) {
+                currentLine = pos[1];
+                xCursorPos = pos[0];
+                maxXPos = xCursorPos;
+            }
+        } else {
+            if (currentLine >= 1 && xCursorPos == 1) {
+                currentLine--;
+                xCursorPos = ct.ed.inputs.get(currentLine).length();
+                maxXPos = xCursorPos;
+            } else {
+                xCursorPos--;
+                maxXPos = xCursorPos;
+            }
+        }
+    }
+
+    public void enterPressed() {
+        String content = ct.ed.inputs.get(currentLine).substring(xCursorPos);
+        ct.ed.inputs.get(currentLine).setLength(xCursorPos);
+        ct.ed.inputs.add(currentLine + 1, new StringBuilder());
+
+        currentLine++;
+        ct.ed.inputs.get(currentLine).append(content);
+        xCursorPos = 0;
+        maxXPos = xCursorPos;
+    }
+
+    public int getxCursorPos() {
+        return xCursorPos;
+    }
+
+    public int getCurrentLine() {
+        return currentLine;
+    }
+
+    public List<String> getWordList() {
+        List<String> wordList = new ArrayList<>();
+        for (StringBuilder sb : inputs) {
+            wordList.add(sb.toString());
+        }
+        return wordList;
+    }
+}
