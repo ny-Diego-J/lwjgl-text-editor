@@ -7,6 +7,8 @@ import org.lwjgl.nanovg.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.nio.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -18,17 +20,19 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Gui {
-    public float y_offset = 10.0f;
     private static final String FONT_NAME = "JetBrains mono";
+    public float y_offset = 10.0f;
     Logger logger = Logger.getLogger(getClass().getName());
     Controller ct;
     float fontSize = 54.0f;
+    float finalHeight = 0;
     private long window;
 
 
     public Gui(Controller c) {
         this.ct = c;
     }
+
 
     public void run() {
         logger.info("Hello LWJGL " + Version.getVersion() + "!");
@@ -52,8 +56,7 @@ public class Gui {
 
 
         if (System.getProperty("os.name").equalsIgnoreCase("Linux")) {
-            if (!glfwInit())
-                throw new IllegalStateException("Unable to initialize GLFW");
+            if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
         } else if (System.getProperty("os.name").toLowerCase().contains("win")) {
             //Windows version
             glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WIN32);
@@ -100,8 +103,48 @@ public class Gui {
         // Enable v-sync
         glfwSwapInterval(1);
 
+        // Set window icon
+        GLFWImage.Buffer icon = extractByteBufferFromImagePath("C:\\Users\\digij\\Documents\\GitHub\\ny\\lwjgl-text-editor\\src\\main\\resources\\images\\Noe.jpg");
+        glfwSetWindowIcon(window, icon);
+
         // Make the window visible
         glfwShowWindow(window);
+    }
+
+    public GLFWImage.Buffer extractByteBufferFromImagePath(String s) {
+        try {
+            BufferedImage bi = ImageIO.read(new java.io.File(s));
+
+            int width = bi.getWidth();
+            int height = bi.getHeight();
+
+            int[] pixels = new int[width * height];
+            bi.getRGB(0, 0, width, height, pixels, 0, width);
+
+            ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
+
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int pixel = pixels[y * width + x];
+                    buffer.put((byte) ((pixel >> 16) & 0xFF));
+                    buffer.put((byte) ((pixel >> 8) & 0xFF));
+                    buffer.put((byte) (pixel & 0xFF));
+                    buffer.put((byte) ((pixel >> 24) & 0xFF));
+                }
+            }
+            buffer.flip();
+
+            GLFWImage icon = GLFWImage.malloc();
+            icon.set(width, height, buffer);
+
+            GLFWImage.Buffer iconBuffer = GLFWImage.malloc(1);
+            iconBuffer.put(0, icon);
+
+            return iconBuffer;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private void loop() {
@@ -175,7 +218,6 @@ public class Gui {
 
             int xPos = ct.xCursorPos % maxCharLine;
             float baseHeight = ct.currentLine * fontSize + lineBreaks * fontSize;
-
             float bannerCenterY = baseHeight + y_offset + (fontSize / 2.0f);
 
             NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
@@ -185,7 +227,6 @@ public class Gui {
             NanoVG.nvgLineTo(vg, width[0], bannerCenterY);
 
             NanoVG.nvgStrokeColor(vg, color);
-
             NanoVG.nvgStrokeWidth(vg, fontSize);
             NanoVG.nvgStroke(vg);
 
@@ -198,13 +239,13 @@ public class Gui {
                 }
             }
 
+            finalHeight = textHeight;
+
             NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
             float cursorTop = baseHeight + y_offset;
             float cursorBottom = cursorTop + fontSize;
 
-            NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
             NanoVG.nvgBeginPath(vg);
-
             NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, cursorTop);
             NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, cursorBottom);
 

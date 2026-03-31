@@ -27,7 +27,7 @@ public class InputHandler {
         if (ctrlPressed) {
             if (ct.gui.fontSize > 1.0f) ct.gui.fontSize -= 2;
         } else {
-            ct.gui.y_offset -= 20.0f;
+            if (ct.gui.fontSize * ct.gui.finalHeight * -1 < ct.gui.y_offset) ct.gui.y_offset -= 20.0f;
         }
     }
 
