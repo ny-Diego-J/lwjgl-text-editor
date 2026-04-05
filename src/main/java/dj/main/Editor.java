@@ -147,52 +147,58 @@ public class Editor {
         int[] pos = new int[2];
         pos[0] = xCursorPos;  // x pos
         pos[1] = currentLine; // y pos
-        do {
-            if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
-                return pos;
-            } else if (pos[0] + 1 == inputs.get(currentLine).length() && currentLine + 1 < inputs.size()) {
-                return pos;
-            } else if (pos[0] == inputs.get(currentLine).length() && currentLine + 1 == inputs.size()) {
-                return pos;
-            } else if (pos[0] + 1 == inputs.get(currentLine).length() && currentLine + 1 == inputs.size()) {
-                return pos;
-            } else pos[0]++;
-        } while (inputs.get(currentLine).charAt(pos[0]) == ' ');
-        while (inputs.get(currentLine).charAt(pos[0]) != ' ') {
-            if (pos[0] == inputs.get(currentLine).length() - 1) break;
+
+        if (isNextLine(pos)) {
+            if (currentLine + 1 < inputs.size()) {
+                pos[1] += 1;
+                pos[0] = 0;
+            }
+            return pos;
+        }
+        while (inputs.get(currentLine).charAt(pos[0]) == ' ') { // repeat until the next char is reached
             pos[0]++;
+            if (isNextLine(pos)) {
+                return pos;
+            }
+        }
+        while (inputs.get(currentLine).charAt(pos[0]) != ' ') { // repeat until the end of the word is reached
+            pos[0]++;
+            if (isNextLine(pos)) {
+                return pos;
+            }
         }
         return pos;
+    }
+
+    /**
+     * check if the end of the line is reached
+     * @param pos position to update. Includes 0 = x and 1 = y
+     * @return if end of line is reached
+     */
+    private boolean isNextLine(int[] pos) {
+        return pos[0] >= inputs.get(pos[1]).length();
     }
 
     public void cursorUp() {
         if (currentLine >= 1) {
             currentLine--;
-            if (xCursorPos < maxXPos) {
-                if (maxXPos < ct.ed.inputs.get(currentLine).length()) {
-                    xCursorPos = maxXPos;
-                } else {
-                    xCursorPos = ct.ed.inputs.get(currentLine).length();
-                }
-            } else if (xCursorPos > ct.ed.inputs.get(currentLine).length()) {
-                xCursorPos = ct.ed.inputs.get(currentLine).length();
-            }
+            setMaxPos();
         }
     }
 
     public void cursorDown() {
         if (currentLine + 1 < ct.ed.inputs.size()) {
             currentLine++;
-            if (xCursorPos < maxXPos) {
-                if (maxXPos < ct.ed.inputs.get(currentLine).length()) {
-                    xCursorPos = maxXPos;
-                } else {
-                    xCursorPos = ct.ed.inputs.get(currentLine).length();
-                }
-            } else if (xCursorPos > ct.ed.inputs.get(currentLine).length())
-                xCursorPos = ct.ed.inputs.get(currentLine).length();
+            setMaxPos();
 
         }
+    }
+
+    private void setMaxPos() {
+        if (xCursorPos < maxXPos) {
+            xCursorPos = Math.min(maxXPos, ct.ed.inputs.get(currentLine).length());
+        } else if (xCursorPos > ct.ed.inputs.get(currentLine).length())
+            xCursorPos = ct.ed.inputs.get(currentLine).length();
     }
 
     public void backwardWord() {
@@ -229,21 +235,10 @@ public class Editor {
     }
 
     public void forwardWord() {
-        //TODO: make next going next line when at end of line
         int[] pos = ct.ed.nextWord();
-        if (pos[1] == currentLine && pos[0] >= xCursorPos) {
-            if (pos[0] + 1 == ct.ed.inputs.get(pos[1]).length()) {
-                xCursorPos = pos[0] + 1;
-                maxXPos = xCursorPos;
-                return;
-            }
-            xCursorPos = pos[0];
-            maxXPos = xCursorPos;
-            return;
-        }
-        if (pos[1] > currentLine) {
-            currentLine = pos[1];
-        }
+        xCursorPos = pos[0];
+        currentLine = pos[1];
+        maxXPos = xCursorPos;
     }
 
     public void forwardChar() {
