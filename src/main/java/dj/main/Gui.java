@@ -20,13 +20,17 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Gui {
+    public static final String FONT_NAME = "JetBrains mono";
+    private static final String OPERATING_SYSTEM = "os.name";
     private Controller ct;
     private long window;
     private Logger logger = Logger.getLogger(getClass().getName());
-    private static final String OPERATING_SYSTEM = "os.name";
-    public static final String FONT_NAME = "JetBrains mono";
     private float fontSize = 54.0f;
     private float yOffset = 10.0f;
+
+    public Gui(Controller c) {
+        this.ct = c;
+    }
 
     public float getFontSize() {
         return fontSize;
@@ -34,10 +38,6 @@ public class Gui {
 
     public float getyOffset() {
         return yOffset;
-    }
-
-    public Gui(Controller c) {
-        this.ct = c;
     }
 
     public void run() {
@@ -195,6 +195,10 @@ public class Gui {
 
             ct.pt.printText(vg, width, fbWidth, height, color);
 
+            //ct.pt.printHeader(vg, width, fbWidth, height, color);
+            NanoVG.nvgEndFrame(vg);
+
+
             glfwSwapBuffers(window); // swap the color buffers
 
             // Poll for window events. The key callback above will only be
@@ -208,6 +212,6 @@ public class Gui {
     }
 
     public void scrollUp(float amount) {
-        if (yOffset <= -10.0f) yOffset += amount;
+        yOffset += amount;
     }
 }

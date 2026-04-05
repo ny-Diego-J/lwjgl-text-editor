@@ -6,6 +6,7 @@ import org.lwjgl.nanovg.NanoVG;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class PrintText {
     private Controller ct;
@@ -35,7 +36,7 @@ public class PrintText {
 
 
         int xPos = xCursorPos % maxCharLine;
-        float baseHeight = currentLine * fontSize + lineBreaks * fontSize;
+        float baseHeight = lineBreaks * fontSize;
         float bannerCenterY = baseHeight + yOffset + (fontSize / 2.0f);
 
         NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
@@ -76,7 +77,6 @@ public class PrintText {
             NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
             NanoVG.nvgText(vg, 10.0f, height[0] - 100.0f, "Press anything to start the editor");
         }
-        NanoVG.nvgEndFrame(vg);
     }
 
     private ArrayList<String> getLines(String input, int width, float charWidth) {
@@ -98,6 +98,7 @@ public class PrintText {
         return lines;
     }
 
+
     private void splitLine(ArrayList<String> lines, String input, int width, float charWidth, int currentIndex) {
         if (charWidth * input.length() > width) {
             float amount = width / charWidth;
@@ -115,7 +116,7 @@ public class PrintText {
             if (i == currentLine) {
                 if (xCursorPos + 1 > maxCharLine) {
                     for (int j = 0; j < wordList.get(i).length() / maxCharLine; j++) {
-                        lineBreaks++;
+                        if ((1 + j) * maxCharLine - 1 < xCursorPos) lineBreaks++;
                     }
                 }
             } else {
