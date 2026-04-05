@@ -36,12 +36,13 @@ public class PrintText {
 
 
         int xPos = xCursorPos % maxCharLine;
-        float baseHeight = lineBreaks * fontSize;
+        float baseHeight = lineBreaks * fontSize + currentLine * fontSize;
         float bannerCenterY = baseHeight + yOffset + (fontSize / 2.0f);
 
         NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
         NanoVG.nvgBeginPath(vg);
 
+        // draw current line background
         NanoVG.nvgMoveTo(vg, 0.0f, bannerCenterY);
         NanoVG.nvgLineTo(vg, width[0], bannerCenterY);
 
@@ -51,6 +52,7 @@ public class PrintText {
 
 
         for (String s : ct.ed.getWordList()) {
+            //text itself
             ArrayList<String> lines = getLines(s, width[0], charWidth);
             for (String st : lines) {
                 NanoVG.nvgText(vg, 10.0f, textHeight, st);
@@ -77,6 +79,23 @@ public class PrintText {
             NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
             NanoVG.nvgText(vg, 10.0f, height[0] - 100.0f, "Press anything to start the editor");
         }
+    }
+
+    public void printHeader(long vg, int[] width, int[] fbWidth, int[] height, NVGColor color) {
+        NanoVG.nvgBeginPath(vg);
+        float pxRatio = (float) fbWidth[0] / (float) width[0];
+        NanoVG.nvgRGBA((byte) 30, (byte) 32, (byte) 48, (byte) 255, color);
+        float bannerWidth = ct.gui.getFontSize() + 20.0f;
+        NanoVG.nvgMoveTo(vg, 0, 0.0f + bannerWidth / 2);
+        NanoVG.nvgLineTo(vg, width[0], 0.0f + bannerWidth / 2);
+        NanoVG.nvgStrokeColor(vg, color);
+        NanoVG.nvgStrokeWidth(vg, bannerWidth);
+        NanoVG.nvgStroke(vg);
+        NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
+        NanoVG.nvgFontSize(vg, ct.gui.getFontSize());
+        NanoVG.nvgFontFace(vg, Gui.FONT_NAME);
+        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER | NanoVG.NVG_ALIGN_TOP);
+        NanoVG.nvgText(vg, (float) width[0] / 2, 10.0f, ct.filePath);
     }
 
     private ArrayList<String> getLines(String input, int width, float charWidth) {

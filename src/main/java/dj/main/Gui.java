@@ -194,6 +194,7 @@ public class Gui {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// clear the framebuffer
 
             ct.pt.printText(vg, width, fbWidth, height, color);
+            ct.pt.printHeader(vg, width, fbWidth, height, color);
 
             //ct.pt.printHeader(vg, width, fbWidth, height, color);
             NanoVG.nvgEndFrame(vg);
