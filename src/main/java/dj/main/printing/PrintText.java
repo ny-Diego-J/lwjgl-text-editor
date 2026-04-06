@@ -85,17 +85,20 @@ public class PrintText {
         NanoVG.nvgBeginPath(vg);
         float pxRatio = (float) fbWidth[0] / (float) width[0];
         NanoVG.nvgRGBA((byte) 30, (byte) 32, (byte) 48, (byte) 255, color);
-        float bannerWidth = ct.gui.getFontSize() + 20.0f;
+        float bannerWidth = ct.gui.getFontSize() * 2;
+
         NanoVG.nvgMoveTo(vg, 0, 0.0f + bannerWidth / 2);
         NanoVG.nvgLineTo(vg, width[0], 0.0f + bannerWidth / 2);
+
         NanoVG.nvgStrokeColor(vg, color);
         NanoVG.nvgStrokeWidth(vg, bannerWidth);
         NanoVG.nvgStroke(vg);
+
         NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
         NanoVG.nvgFontSize(vg, ct.gui.getFontSize());
         NanoVG.nvgFontFace(vg, Gui.FONT_NAME);
-        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER | NanoVG.NVG_ALIGN_TOP);
-        NanoVG.nvgText(vg, (float) width[0] / 2, 10.0f, ct.filePath);
+        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER);
+        NanoVG.nvgText(vg, (float) width[0] / 2, ct.gui.getFontSize(), ct.filePath);
     }
 
     private ArrayList<String> getLines(String input, int width, float charWidth) {
