@@ -26,7 +26,8 @@ public class Gui {
     private long window;
     private Logger logger = Logger.getLogger(getClass().getName());
     private float fontSize = 54.0f;
-    private float yOffset = 10.0f;
+    private float yOffset = 0.0f;
+    private float bannerOffset = 0.0f;
 
     public Gui(Controller c) {
         this.ct = c;
@@ -193,8 +194,7 @@ public class Gui {
             glViewport(0, 0, fbWidth[0], fbHeight[0]);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// clear the framebuffer
 
-            ct.pt.printText(vg, width, fbWidth, height, color);
-            ct.pt.printHeader(vg, width, fbWidth, height, color);
+            ct.pt.printAll(vg, width, fbWidth, height, color);
 
             //ct.pt.printHeader(vg, width, fbWidth, height, color);
             NanoVG.nvgEndFrame(vg);
@@ -213,6 +213,15 @@ public class Gui {
     }
 
     public void scrollUp(float amount) {
+        //TODO: fix scrolling max and min
         yOffset += amount;
+    }
+
+    public float getBannerOffset() {
+        return bannerOffset;
+    }
+
+    public void setBannerOffset(float bannerOffset) {
+        this.bannerOffset = bannerOffset;
     }
 }

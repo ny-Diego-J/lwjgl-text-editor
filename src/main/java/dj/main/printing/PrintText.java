@@ -9,35 +9,39 @@ import java.util.List;
 import java.util.logging.Level;
 
 public class PrintText {
+    private float textHeight;
     private Controller ct;
     private int currentLine;
     private int xCursorPos;
+    private float pxRatio;
+    private float charWidth;
+    private int maxCharLine;
+    private int lineBreaks;
 
 
     public PrintText(Controller ct) {
         this.ct = ct;
     }
 
-    public void printText(long vg, int[] width, int[] fbWidth, int[] height, NVGColor color) {
+    public void printAll(long vg, int[] width, int[] fbWidth, int[] height, NVGColor color) {
         currentLine = ct.ed.getCurrentLine();
         xCursorPos = ct.ed.getxCursorPos();
-        float pxRatio = (float) fbWidth[0] / (float) width[0];
-        float textHeight = ct.gui.getyOffset();
-        float fontSize = ct.gui.getFontSize();
-        float yOffset = ct.gui.getyOffset();
+        textHeight = ct.gui.getyOffset() + ct.gui.getBannerOffset();
+        pxRatio = (float) fbWidth[0] / (float) width[0];
+        charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
+        maxCharLine = (int) (width[0] / charWidth);
+        lineBreaks = getLineBreaks(maxCharLine);
 
-        NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
-        NanoVG.nvgFontSize(vg, fontSize);
-        NanoVG.nvgFontFace(vg, Gui.FONT_NAME);
-        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
-        float charWidth = NanoVG.nvgTextBounds(vg, 0, 0, "A", (float[]) null);
-        int maxCharLine = (int) (width[0] / charWidth);
-        int lineBreaks = getLineBreaks(maxCharLine);
+        printLineBackground(vg, width, color);
+        printText(vg, width, height, color, maxCharLine, lineBreaks);
+        printCursor(vg, color);
+        printHeader(vg, width, fbWidth, height, color);
+    }
 
-
+    private void printLineBackground(long vg, int[] width, NVGColor color) {
         int xPos = xCursorPos % maxCharLine;
-        float baseHeight = lineBreaks * fontSize + currentLine * fontSize;
-        float bannerCenterY = baseHeight + yOffset + (fontSize / 2.0f);
+        float baseHeight = lineBreaks * ct.gui.getFontSize() + currentLine * ct.gui.getFontSize() + ct.gui.getBannerOffset();
+        float bannerCenterY = baseHeight + ct.gui.getyOffset() + (ct.gui.getFontSize() / 2.0f);
 
         NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
         NanoVG.nvgBeginPath(vg);
@@ -45,6 +49,43 @@ public class PrintText {
         // draw current line background
         NanoVG.nvgMoveTo(vg, 0.0f, bannerCenterY);
         NanoVG.nvgLineTo(vg, width[0], bannerCenterY);
+
+        NanoVG.nvgStrokeColor(vg, color);
+        NanoVG.nvgStrokeWidth(vg, ct.gui.getFontSize());
+        NanoVG.nvgStroke(vg);
+    }
+
+    private void printCursor(long vg, NVGColor color) {
+        float baseHeight = lineBreaks * ct.gui.getFontSize() + currentLine * ct.gui.getFontSize() + ct.gui.getBannerOffset();
+        int xPos = xCursorPos % maxCharLine;
+        NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
+        float cursorTop = baseHeight + ct.gui.getyOffset();
+        float cursorBottom = cursorTop + ct.gui.getFontSize();
+
+        NanoVG.nvgBeginPath(vg);
+        NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, cursorTop);
+        NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, cursorBottom);
+
+        NanoVG.nvgStrokeColor(vg, color);
+        NanoVG.nvgStrokeWidth(vg, 2.0f);
+        NanoVG.nvgStroke(vg);
+    }
+
+    private void printText(long vg, int[] width, int[] height, NVGColor color, int maxCharLine, int lineBreaks) {
+        float fontSize = ct.gui.getFontSize();
+        NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
+        NanoVG.nvgFontSize(vg, fontSize);
+        NanoVG.nvgFontFace(vg, Gui.FONT_NAME);
+        NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
+
+        float baseHeight = lineBreaks * fontSize + currentLine * fontSize;
+        float bannerCenterY = baseHeight + ct.gui.getyOffset() + (fontSize / 2.0f);
+
+        NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
+        NanoVG.nvgBeginPath(vg);
+
+        // draw current line background
+
 
         NanoVG.nvgStrokeColor(vg, color);
         NanoVG.nvgStrokeWidth(vg, fontSize);
@@ -60,18 +101,6 @@ public class PrintText {
             }
         }
 
-        NanoVG.nvgRGBA((byte) 208, (byte) 204, (byte) 178, (byte) 255, color);
-        float cursorTop = baseHeight + yOffset;
-        float cursorBottom = cursorTop + fontSize;
-
-        NanoVG.nvgBeginPath(vg);
-        NanoVG.nvgMoveTo(vg, charWidth * xPos + 10.0f, cursorTop);
-        NanoVG.nvgLineTo(vg, charWidth * xPos + 10.0f, cursorBottom);
-
-        NanoVG.nvgStrokeColor(vg, color);
-        NanoVG.nvgStrokeWidth(vg, 2.0f);
-        NanoVG.nvgStroke(vg);
-
         if (!ct.hasStarted) {
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
             NanoVG.nvgFontSize(vg, 54.0f);
@@ -81,24 +110,28 @@ public class PrintText {
         }
     }
 
-    public void printHeader(long vg, int[] width, int[] fbWidth, int[] height, NVGColor color) {
+    private void printHeader(long vg, int[] width, int[] fbWidth, int[] height, NVGColor color) {
         NanoVG.nvgBeginPath(vg);
         float pxRatio = (float) fbWidth[0] / (float) width[0];
-        NanoVG.nvgRGBA((byte) 30, (byte) 32, (byte) 48, (byte) 255, color);
-        float bannerWidth = ct.gui.getFontSize() * 2;
+        //NanoVG.nvgRGBA((byte) 30, (byte) 32, (byte) 48, (byte) 255, color);
+        NanoVG.nvgRGBA((byte) 0, (byte) 0, (byte) 0, (byte) 255, color);
+        float bannerHeight = ct.gui.getFontSize() + ct.gui.getFontSize() / 2;
 
-        NanoVG.nvgMoveTo(vg, 0, 0.0f + bannerWidth / 2);
-        NanoVG.nvgLineTo(vg, width[0], 0.0f + bannerWidth / 2);
+        float yPosition = bannerHeight / 2 + ct.gui.getyOffset();
+        ct.gui.setBannerOffset(bannerHeight);
+
+        NanoVG.nvgMoveTo(vg, 0, yPosition);
+        NanoVG.nvgLineTo(vg, width[0], yPosition);
 
         NanoVG.nvgStrokeColor(vg, color);
-        NanoVG.nvgStrokeWidth(vg, bannerWidth);
+        NanoVG.nvgStrokeWidth(vg, bannerHeight);
         NanoVG.nvgStroke(vg);
 
         NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
         NanoVG.nvgFontSize(vg, ct.gui.getFontSize());
         NanoVG.nvgFontFace(vg, Gui.FONT_NAME);
         NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_CENTER);
-        NanoVG.nvgText(vg, (float) width[0] / 2, ct.gui.getFontSize(), ct.filePath);
+        NanoVG.nvgText(vg, (float) width[0] / 2, yPosition + ct.gui.getFontSize() / 2, ct.filePath);
     }
 
     private ArrayList<String> getLines(String input, int width, float charWidth) {
