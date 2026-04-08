@@ -28,6 +28,7 @@ public class Gui {
     private float fontSize = 54.0f;
     private float yOffset = 0.0f;
     private float bannerOffset = 0.0f;
+    private float textHeight = 0.0f;
 
     public Gui(Controller c) {
         this.ct = c;
@@ -40,6 +41,11 @@ public class Gui {
     public float getyOffset() {
         return yOffset;
     }
+
+    public void setTextHeight(float textHeight) {
+        this.textHeight = textHeight;
+    }
+
 
     public void run() {
         logger.info("Hello LWJGL " + Version.getVersion() + "!");
@@ -195,8 +201,7 @@ public class Gui {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// clear the framebuffer
 
             ct.pt.printAll(vg, width, fbWidth, height, color);
-
-            //ct.pt.printHeader(vg, width, fbWidth, height, color);
+            //System.out.println(yOffset + " " + textHeight);
             NanoVG.nvgEndFrame(vg);
 
 
@@ -209,12 +214,12 @@ public class Gui {
     }
 
     public void addFontSize(float amount) {
-        if (fontSize < 1000.0f) fontSize += amount;
+        if (fontSize < 1000.0f && fontSize + amount > 0) fontSize += amount;
     }
 
     public void scrollUp(float amount) {
         //TODO: fix scrolling max and min
-        yOffset += amount;
+        if (yOffset + amount <= 0.0f) yOffset += amount;
     }
 
     public float getBannerOffset() {

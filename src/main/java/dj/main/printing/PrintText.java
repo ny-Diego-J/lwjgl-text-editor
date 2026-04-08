@@ -6,11 +6,10 @@ import org.lwjgl.nanovg.NanoVG;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public class PrintText {
+    private final Controller ct;
     private float textHeight;
-    private Controller ct;
     private int currentLine;
     private int xCursorPos;
     private float pxRatio;
@@ -33,13 +32,12 @@ public class PrintText {
         lineBreaks = getLineBreaks(maxCharLine);
 
         printLineBackground(vg, width, color);
-        printText(vg, width, height, color, maxCharLine, lineBreaks);
+        printText(vg, width, height, color);
         printCursor(vg, color);
-        printHeader(vg, width, fbWidth, height, color);
+        printHeader(vg, width, height, color);
     }
 
     private void printLineBackground(long vg, int[] width, NVGColor color) {
-        int xPos = xCursorPos % maxCharLine;
         float baseHeight = lineBreaks * ct.gui.getFontSize() + currentLine * ct.gui.getFontSize() + ct.gui.getBannerOffset();
         float bannerCenterY = baseHeight + ct.gui.getyOffset() + (ct.gui.getFontSize() / 2.0f);
 
@@ -71,15 +69,12 @@ public class PrintText {
         NanoVG.nvgStroke(vg);
     }
 
-    private void printText(long vg, int[] width, int[] height, NVGColor color, int maxCharLine, int lineBreaks) {
+    private void printText(long vg, int[] width, int[] height, NVGColor color) {
         float fontSize = ct.gui.getFontSize();
         NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
         NanoVG.nvgFontSize(vg, fontSize);
         NanoVG.nvgFontFace(vg, Gui.FONT_NAME);
         NanoVG.nvgTextAlign(vg, NanoVG.NVG_ALIGN_LEFT | NanoVG.NVG_ALIGN_TOP);
-
-        float baseHeight = lineBreaks * fontSize + currentLine * fontSize;
-        float bannerCenterY = baseHeight + ct.gui.getyOffset() + (fontSize / 2.0f);
 
         NanoVG.nvgRGBA((byte) 47, (byte) 51, (byte) 77, (byte) 255, color);
         NanoVG.nvgBeginPath(vg);
@@ -100,6 +95,7 @@ public class PrintText {
                 textHeight += fontSize;
             }
         }
+        ct.gui.setTextHeight(textHeight);
 
         if (!ct.hasStarted) {
             NanoVG.nvgBeginFrame(vg, width[0], height[0], pxRatio);
@@ -110,11 +106,10 @@ public class PrintText {
         }
     }
 
-    private void printHeader(long vg, int[] width, int[] fbWidth, int[] height, NVGColor color) {
+    private void printHeader(long vg, int[] width, int[] height, NVGColor color) {
         NanoVG.nvgBeginPath(vg);
-        float pxRatio = (float) fbWidth[0] / (float) width[0];
-        //NanoVG.nvgRGBA((byte) 30, (byte) 32, (byte) 48, (byte) 255, color);
-        NanoVG.nvgRGBA((byte) 0, (byte) 0, (byte) 0, (byte) 255, color);
+        NanoVG.nvgRGBA((byte) 30, (byte) 32, (byte) 48, (byte) 255, color);
+        //NanoVG.nvgRGBA((byte) 0, (byte) 0, (byte) 0, (byte) 255, color);
         float bannerHeight = ct.gui.getFontSize() + ct.gui.getFontSize() / 2;
 
         float yPosition = bannerHeight / 2 + ct.gui.getyOffset();
@@ -166,22 +161,22 @@ public class PrintText {
 
     private int getLineBreaks(int maxCharLine) {
         List<String> wordList = ct.ed.getWordList();
-        int lineBreaks = 0;
+        int breaks = 0;
         for (int i = 0; i < currentLine + 1; i++) {
             if (i == currentLine) {
                 if (xCursorPos + 1 > maxCharLine) {
                     for (int j = 0; j < wordList.get(i).length() / maxCharLine; j++) {
-                        if ((1 + j) * maxCharLine - 1 < xCursorPos) lineBreaks++;
+                        if ((1 + j) * maxCharLine - 1 < xCursorPos) breaks++;
                     }
                 }
             } else {
                 if (wordList.get(i).length() > maxCharLine) {
                     for (int j = 0; j < wordList.get(i).length() / maxCharLine; j++) {
-                        lineBreaks++;
+                        breaks++;
                     }
                 }
             }
         }
-        return lineBreaks;
+        return breaks;
     }
 }
