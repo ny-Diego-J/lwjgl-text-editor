@@ -3,6 +3,8 @@ package dj.main;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class InputHandler {
+    private static final float ZOOM_AMOUNT = 5.0f;
+    private static final float SCROLL_AMOUNT = 20.0f;
     Controller ct;
 
     public InputHandler(Controller ct) {
@@ -17,17 +19,17 @@ public class InputHandler {
 
     private void scrollUp(boolean ctrlPressed) {
         if (ctrlPressed) {
-            ct.gui.addFontSize(2.0f);
+            ct.gui.addFontSize(ZOOM_AMOUNT);
         } else {
-            ct.gui.scrollUp(20.0f);
+            ct.gui.scrollUp(SCROLL_AMOUNT);
         }
     }
 
     private void scrollDown(boolean ctrlPressed) {
         if (ctrlPressed) {
-            ct.gui.addFontSize(-2.0f);
+            ct.gui.addFontSize(-ZOOM_AMOUNT);
         } else {
-            ct.gui.scrollUp(-20.0f);
+            ct.gui.scrollUp(-SCROLL_AMOUNT);
         }
     }
 

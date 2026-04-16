@@ -218,8 +218,9 @@ public class Gui {
     }
 
     public void scrollUp(float amount) {
-        //TODO: fix scrolling max and min
-        if (yOffset + amount <= 0.0f) yOffset += amount;
+        int lines = ct.pt.getLines(ct.pt.maxCharLine);
+        float maxHeight = (lines * fontSize + bannerOffset) * -1;
+        if (yOffset + amount <= 0.0f && yOffset + amount >= maxHeight) yOffset += amount;
     }
 
     public float getBannerOffset() {

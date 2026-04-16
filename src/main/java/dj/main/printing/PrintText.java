@@ -9,12 +9,12 @@ import java.util.List;
 
 public class PrintText {
     private final Controller ct;
+    public int maxCharLine;
     private float textHeight;
     private int currentLine;
     private int xCursorPos;
     private float pxRatio;
     private float charWidth;
-    private int maxCharLine;
     private int lineBreaks;
 
 
@@ -129,7 +129,7 @@ public class PrintText {
         NanoVG.nvgText(vg, (float) width[0] / 2, yPosition + ct.gui.getFontSize() / 2, ct.filePath);
     }
 
-    private ArrayList<String> getLines(String input, int width, float charWidth) {
+    public ArrayList<String> getLines(String input, int width, float charWidth) {
         ArrayList<String> lines = new ArrayList<>();
         if (charWidth * input.length() > width) {
             splitLine(lines, input, width, charWidth, 0);
@@ -174,6 +174,19 @@ public class PrintText {
                     for (int j = 0; j < wordList.get(i).length() / maxCharLine; j++) {
                         breaks++;
                     }
+                }
+            }
+        }
+        return breaks;
+    }
+
+    public int getLines(int maxCharLine) {
+        List<String> wordList = ct.ed.getWordList();
+        int breaks = wordList.size();
+        for (int i = 0; i < wordList.size() - 1; i++) {
+            if (xCursorPos + 1 > maxCharLine) {
+                for (int j = 0; j < wordList.get(i).length() / maxCharLine; j++) {
+                    if ((1 + j) * maxCharLine - 1 < xCursorPos) breaks++;
                 }
             }
         }
